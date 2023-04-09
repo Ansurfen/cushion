@@ -17,6 +17,7 @@ type Document struct {
 	// But DisplayedCursorPosition returns 4 because '日' and '本' are double width characters.
 	cursorPosition int
 	lastKey        Key
+	mode           int
 }
 
 // NewDocument return the new empty document.
@@ -438,4 +439,12 @@ func (d *Document) leadingWhitespaceInCurrentLine() (margin string) {
 	trimmed := strings.TrimSpace(d.CurrentLine())
 	margin = d.CurrentLine()[:len(d.CurrentLine())-len(trimmed)]
 	return
+}
+
+func (d *Document) SetMode(mode int) {
+	d.mode = mode
+}
+
+func (d *Document) GetMode() int {
+	return d.mode
 }

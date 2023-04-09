@@ -17,7 +17,8 @@ type Render struct {
 	title              string
 	row                uint16
 	col                uint16
-	highlight          Highlight
+	highlightStyle     HighlightStyls
+	highlightCvt       func(string) string
 
 	previousCursor int
 
@@ -38,6 +39,14 @@ type Render struct {
 	selectedDescriptionBGColor   Color
 	scrollbarThumbColor          Color
 	scrollbarBGColor             Color
+	modePrefixTextColor          Color
+	modePrefixTtextBGColor       Color
+	modeSuffixTextColor          Color
+	modeSuffixTtextBGColor       Color
+	commentSuggestionTextColor   Color
+	commentSuggestionBGColor     Color
+	commentDescriptionTextColor  Color
+	commentDescriptionBGColor    Color
 }
 
 // Setup to initialize console output.
@@ -92,16 +101,57 @@ func (r *Render) renderWindowTooSmall() {
 	r.out.WriteStr("Your console window is too small...")
 }
 
+func (r *Render) renderMode(mode Suggest) {
+	r.out.CursorDown(1)
+	r.out.SetColor(r.modePrefixTextColor, r.modePrefixTtextBGColor, false)
+	r.out.WriteStr(mode.Text)
+	r.out.SetColor(r.modeSuffixTextColor, r.modeSuffixTtextBGColor, false)
+	r.out.WriteStr(mode.Description)
+	r.out.WriteStr(" ")
+	r.out.SetColor(DefaultColor, DefaultColor, false)
+}
+
 func (r *Render) renderCompletion(buf *Buffer, completions *CompletionManager) {
 	suggestions := completions.GetSuggestions()
 	if len(completions.GetSuggestions()) == 0 {
 		return
 	}
 	prefix := r.getCurrentPrefix()
-	formatted, width := formatSuggestions(
-		suggestions,
-		int(r.col)-runewidth.StringWidth(prefix)-1, // -1 means a width of scrollbar
+	var (
+		formatted   []Suggest
+		modeSuggest Suggest
+		mode        CompletionMode
+		width       int
 	)
+	if completions.modes != nil {
+		modeNum := buf.Document().GetMode()
+		mode = completions.modes[modeNum]
+		desc := mode.Description
+		if len(desc) == 0 {
+			desc = "Press Ctrl + L to switch mode"
+		}
+		if mode.Attr == NODSCRIPTION {
+			formatted, width = formatSuggetionsWithModeWithouDesc(
+				suggestions,
+				int(r.col)-runewidth.StringWidth(prefix)-1, // -1 means a width of scrollbar
+				Suggest{Text: mode.Name, Description: desc},
+			)
+		} else {
+			formatted, width = formatSuggetionsWithMode(
+				suggestions,
+				int(r.col)-runewidth.StringWidth(prefix)-1, // -1 means a width of scrollbar
+				Suggest{Text: mode.Name, Description: desc},
+			)
+		}
+		modeSuggest = formatted[0]
+		formatted = formatted[1:]
+	} else {
+		formatted, width = formatSuggestions(suggestions,
+			int(r.col)-runewidth.StringWidth(prefix)-1, // -1 means a width of scrollbar
+			false,
+		)
+	}
+
 	// +1 means a width of scrollbar.
 	width++
 
@@ -130,21 +180,33 @@ func (r *Render) renderCompletion(buf *Buffer, completions *CompletionManager) {
 		return scrollbarTop <= row && row <= scrollbarTop+scrollbarHeight
 	}
 
+	if completions.modes != nil {
+		r.renderMode(modeSuggest)
+		r.lineWrap(cursor + width)
+		r.backward(cursor+width, width)
+	}
+
 	selected := completions.selected - completions.verticalScroll
 	r.out.SetColor(White, Cyan, false)
 	for i := 0; i < windowHeight; i++ {
 		r.out.CursorDown(1)
-		if i == selected {
-			r.out.SetColor(r.selectedSuggestionTextColor, r.selectedSuggestionBGColor, true)
+		if formatted[i].Comment {
+			r.out.SetColor(r.commentSuggestionTextColor, r.commentSuggestionBGColor, false)
+			r.out.WriteStr(formatted[i].Text)
+			r.out.SetColor(r.commentDescriptionTextColor, r.commentDescriptionBGColor, false)
 		} else {
-			r.out.SetColor(r.suggestionTextColor, r.suggestionBGColor, false)
-		}
-		r.out.WriteStr(formatted[i].Text)
+			if i == selected {
+				r.out.SetColor(r.selectedSuggestionTextColor, r.selectedSuggestionBGColor, true)
+			} else {
+				r.out.SetColor(r.suggestionTextColor, r.suggestionBGColor, false)
+			}
+			r.out.WriteStr(formatted[i].Text)
 
-		if i == selected {
-			r.out.SetColor(r.selectedDescriptionTextColor, r.selectedDescriptionBGColor, false)
-		} else {
-			r.out.SetColor(r.descriptionTextColor, r.descriptionBGColor, false)
+			if i == selected {
+				r.out.SetColor(r.selectedDescriptionTextColor, r.selectedDescriptionBGColor, false)
+			} else {
+				r.out.SetColor(r.descriptionTextColor, r.descriptionBGColor, false)
+			}
 		}
 		r.out.WriteStr(formatted[i].Description)
 
@@ -163,8 +225,11 @@ func (r *Render) renderCompletion(buf *Buffer, completions *CompletionManager) {
 	if x+width >= int(r.col) {
 		r.out.CursorForward(x + width - int(r.col))
 	}
-
-	r.out.CursorUp(windowHeight)
+	if completions.modes != nil {
+		r.out.CursorUp(windowHeight + 1)
+	} else {
+		r.out.CursorUp(windowHeight)
+	}
 	r.out.SetColor(DefaultColor, DefaultColor, false)
 }
 
@@ -196,11 +261,11 @@ func (r *Render) Render(buffer *Buffer, completion *CompletionManager) {
 	defer r.out.ShowCursor()
 
 	r.renderPrefix()
-	r.renderHighlight(line)
+	r.renderInput(line)
 	r.lineWrap(cursor)
 
 	r.out.EraseDown()
-	// Log(fmt.Sprintf("cursor: %d, line: %s(%d), lineC: %s (%d), start: %d, curPos: %d", cursor, line, len(line), lineC, len(lineC), runewidth.StringWidth(lineC), buffer.DisplayCursorPosition()))
+
 	cursor = r.backward(cursor, runewidth.StringWidth(line)-buffer.DisplayCursorPosition())
 
 	r.renderCompletion(buffer, completion)
@@ -275,13 +340,17 @@ func (r *Render) lineWrap(cursor int) {
 	}
 }
 
-func (r *Render) renderHighlight(line string) {
+func (r *Render) renderInput(line string) {
 	for _, l := range strings.SplitAfter(line, " ") {
-		if out, ok := r.highlight[strings.TrimRight(l, " ")]; ok {
-			r.out.WriteRawStr(out + strings.Repeat(" ", len(l)-len(strings.TrimRight(l, " "))))
+		raw := l
+		if r.highlightCvt != nil {
+			l = r.highlightCvt(l)
+		}
+		if style, ok := r.highlightStyle[strings.TrimRight(l, " ")]; ok {
+			r.out.WriteRawStr(style.Render(strings.TrimRight(raw, " ")) + strings.Repeat(" ", len(l)-len(strings.TrimRight(l, " "))))
 		} else {
 			r.out.SetColor(r.inputTextColor, r.inputBGColor, false)
-			r.out.WriteRawStr(l)
+			r.out.WriteRawStr(raw)
 			r.out.SetColor(DefaultColor, DefaultColor, false)
 		}
 	}

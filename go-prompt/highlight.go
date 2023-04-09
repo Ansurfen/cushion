@@ -2,18 +2,19 @@ package prompt
 
 import "github.com/charmbracelet/lipgloss"
 
-type Highlight map[string]string
+type HighlightStyls map[string]lipgloss.Style
 
 type HighlightRule struct {
 	Rule  string
-	Color string
+	Color string // ANSI color range 0-255
 }
 
-func OptionHighlight(rules []HighlightRule) Option {
+func OptionHighlight(rules []HighlightRule, cvt func(s string) string) Option {
 	return func(prompt *Prompt) error {
 		for _, rule := range rules {
-			prompt.renderer.highlight[rule.Rule] = lipgloss.NewStyle().Foreground(lipgloss.Color(rule.Color)).Render(rule.Rule)
+			prompt.renderer.highlightStyle[rule.Rule] = lipgloss.NewStyle().Foreground(lipgloss.Color(rule.Color))
 		}
+		prompt.renderer.highlightCvt = cvt
 		return nil
 	}
 }

@@ -25,6 +25,7 @@ var (
 type Suggest struct {
 	Text        string
 	Description string
+	Comment     bool
 }
 
 // CompletionManager manages which suggestion is now selected.
@@ -33,10 +34,22 @@ type CompletionManager struct {
 	tmp       []Suggest
 	max       uint16
 	completer Completer
+	modes     []CompletionMode
 
 	verticalScroll int
 	wordSeparator  string
 	showAtStart    bool
+}
+
+const (
+	NONE = iota
+	NODSCRIPTION
+)
+
+type CompletionMode struct {
+	Name        string
+	Description string
+	Attr        uint8
 }
 
 // GetSelectedSuggestion returns the selected item.
@@ -74,6 +87,16 @@ func (c *CompletionManager) Previous() {
 		c.verticalScroll--
 	}
 	c.selected--
+	for i := c.selected; i < len(c.tmp); i++ {
+		if i >= 0 && c.tmp[i].Comment {
+			if c.verticalScroll == c.selected && c.selected > 0 {
+				c.verticalScroll--
+			}
+			c.selected--
+		} else {
+			break
+		}
+	}
 	c.update()
 }
 
@@ -83,6 +106,16 @@ func (c *CompletionManager) Next() {
 		c.verticalScroll++
 	}
 	c.selected++
+	for i := c.selected; i < len(c.tmp); i++ {
+		if c.tmp[i].Comment {
+			if c.verticalScroll+int(c.max)-1 == c.selected {
+				c.verticalScroll++
+			}
+			c.selected++
+		} else {
+			break
+		}
+	}
 	c.update()
 }
 
@@ -153,7 +186,17 @@ func formatTexts(o []string, max int, prefix, suffix string) (new []string, widt
 	return n, lenPrefix + width + lenSuffix
 }
 
-func formatSuggestions(suggests []Suggest, max int) (new []Suggest, width int) {
+func formatSuggetionsWithMode(suggests []Suggest, max int, mode Suggest) (new []Suggest, width int) {
+	suggests = append([]Suggest{mode}, suggests...)
+	return formatSuggestions(suggests, max, false)
+}
+
+func formatSuggetionsWithModeWithouDesc(suggests []Suggest, max int, mode Suggest) (new []Suggest, width int) {
+	suggests = append([]Suggest{mode}, suggests...)
+	return formatSuggestions(suggests, max, true)
+}
+
+func formatSuggestions(suggests []Suggest, max int, no_desc bool) (new []Suggest, width int) {
 	num := len(suggests)
 	new = make([]Suggest, num)
 
@@ -161,7 +204,11 @@ func formatSuggestions(suggests []Suggest, max int) (new []Suggest, width int) {
 	for i := 0; i < num; i++ {
 		left[i] = suggests[i].Text
 	}
-	right := make([]string, num)
+	var (
+		right      = make([]string, num)
+		rightWidth int
+	)
+
 	for i := 0; i < num; i++ {
 		right[i] = suggests[i].Description
 	}
@@ -170,10 +217,16 @@ func formatSuggestions(suggests []Suggest, max int) (new []Suggest, width int) {
 	if leftWidth == 0 {
 		return []Suggest{}, 0
 	}
-	right, rightWidth := formatTexts(right, max-leftWidth, rightPrefix, rightSuffix)
+
+	if no_desc {
+		right, rightWidth = formatTexts(right, 0, rightPrefix, rightSuffix)
+	} else {
+		right, rightWidth = formatTexts(right, max-leftWidth, rightPrefix, rightSuffix)
+
+	}
 
 	for i := 0; i < num; i++ {
-		new[i] = Suggest{Text: left[i], Description: right[i]}
+		new[i] = Suggest{Text: left[i], Description: right[i], Comment: suggests[i].Comment}
 	}
 	return new, leftWidth + rightWidth
 }
@@ -181,10 +234,10 @@ func formatSuggestions(suggests []Suggest, max int) (new []Suggest, width int) {
 // NewCompletionManager returns initialized CompletionManager object.
 func NewCompletionManager(completer Completer, max uint16) *CompletionManager {
 	return &CompletionManager{
-		selected:  -1,
-		max:       max,
-		completer: completer,
-
+		selected:       -1,
+		max:            max,
+		completer:      completer,
+		modes:          nil,
 		verticalScroll: 0,
 	}
 }

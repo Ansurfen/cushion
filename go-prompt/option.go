@@ -189,6 +189,62 @@ func OptionScrollbarBGColor(x Color) Option {
 	}
 }
 
+func OptionModePrefixTextColor(x Color) Option {
+	return func(p *Prompt) error {
+		p.renderer.modePrefixTextColor = x
+		return nil
+	}
+}
+
+func OptionModePrefixTtextBGColor(x Color) Option {
+	return func(p *Prompt) error {
+		p.renderer.modePrefixTtextBGColor = x
+		return nil
+	}
+}
+
+func OptionModeSuffixTextColor(x Color) Option {
+	return func(p *Prompt) error {
+		p.renderer.modeSuffixTextColor = x
+		return nil
+	}
+}
+
+func OptionModeSuffixBGColor(x Color) Option {
+	return func(p *Prompt) error {
+		p.renderer.modeSuffixTtextBGColor = x
+		return nil
+	}
+}
+
+func OptionCommentSuggestionTextColor(x Color) Option {
+	return func(p *Prompt) error {
+		p.renderer.commentSuggestionTextColor = x
+		return nil
+	}
+}
+
+func OptionCommentSuggestionBGColor(x Color) Option {
+	return func(p *Prompt) error {
+		p.renderer.commentSuggestionBGColor = x
+		return nil
+	}
+}
+
+func OptionCommentDescriptionTextColor(x Color) Option {
+	return func(p *Prompt) error {
+		p.renderer.commentDescriptionTextColor = x
+		return nil
+	}
+}
+
+func OptionCommentDescriptionBGColor(x Color) Option {
+	return func(p *Prompt) error {
+		p.renderer.commentDescriptionBGColor = x
+		return nil
+	}
+}
+
 // OptionMaxSuggestion specify the max number of displayed suggestions.
 func OptionMaxSuggestion(x uint16) Option {
 	return func(p *Prompt) error {
@@ -266,6 +322,23 @@ func OptionSetExitCheckerOnInput(fn ExitChecker) Option {
 	}
 }
 
+func OptionRegisterMode(modes []CompletionMode) Option {
+	return func(prompt *Prompt) error {
+		if len(modes) > 0 {
+			prompt.completion.modes = modes
+			prompt.keyBindings = append(prompt.keyBindings, KeyBind{
+				Key: ControlL,
+				Fn: func(b *Buffer) {
+					m := (b.Document().GetMode() + 1) % len(modes)
+					b.Document().SetMode(m)
+					prompt.mode = m
+				},
+			})
+		}
+		return nil
+	}
+}
+
 // New returns a Prompt with powerful auto-completion.
 func New(executor Executor, completer Completer, opts ...Option) *Prompt {
 	defaultWriter := NewStdoutWriter()
@@ -293,7 +366,15 @@ func New(executor Executor, completer Completer, opts ...Option) *Prompt {
 			selectedDescriptionBGColor:   Cyan,
 			scrollbarThumbColor:          DarkGray,
 			scrollbarBGColor:             Cyan,
-			highlight:                    make(Highlight),
+			highlightStyle:               make(HighlightStyls),
+			modePrefixTextColor:          Purple,
+			modePrefixTtextBGColor:       Purple,
+			modeSuffixTextColor:          DefaultColor,
+			modeSuffixTtextBGColor:       Purple,
+			commentSuggestionTextColor:   DefaultColor,
+			commentSuggestionBGColor:     DefaultColor,
+			commentDescriptionTextColor:  DefaultColor,
+			commentDescriptionBGColor:    DefaultColor,
 		},
 		buf:         NewBuffer(),
 		executor:    executor,

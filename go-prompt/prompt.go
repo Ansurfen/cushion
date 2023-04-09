@@ -35,6 +35,7 @@ type Prompt struct {
 	completionOnDown  bool
 	exitChecker       ExitChecker
 	skipTearDown      bool
+	mode              int
 }
 
 // Exec is the struct contains user input context.
@@ -256,6 +257,9 @@ func (p *Prompt) Input() string {
 				stopReadBufCh <- struct{}{}
 				return e.input
 			} else {
+				if p.completion.modes != nil {
+					p.buf.Document().SetMode(p.mode)
+				}
 				p.completion.Update(*p.buf.Document())
 				p.renderer.Render(p.buf, p.completion)
 			}

@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var env *Env
+var env *BaseEnv
 
 const (
 	BlankConf = `workdir: ""
@@ -17,24 +17,35 @@ const (
 	ConfFile = "conf.yaml"
 )
 
-func GetEnv() *Env {
+func GetEnv() *BaseEnv {
 	return env
 }
 
-type Env struct {
+type BaseEnv struct {
 	workdir string `yaml:"workdir"`
 	user    *user.User
 	conf    *viper.Viper
 	file    string
 }
 
-func InitEnv(workdir string, subdirs []string) {
-	env = NewEnv()
-	env.workdir = filepath.ToSlash(path.Join(env.workdir, workdir))
+type Env[T any] struct {
+	instance *T
+}
+
+type EnvOpt[T any] struct {
+	Payload   *T
+	Workdir   string
+	Subdirs   []string
+	BlankConf string
+}
+
+func NewEnv[T any](opt EnvOpt[T]) *Env[T] {
+	env = NewBaseEnv()
+	env.workdir = filepath.ToSlash(path.Join(env.workdir, opt.Workdir))
 	if ok, err := PathIsExist(env.workdir); err != nil {
 		panic(err)
 	} else if !ok {
-		if err := env.initWorkspace(subdirs); err != nil {
+		if err := env.initWorkspace(opt.Subdirs); err != nil {
 			panic(err)
 		}
 	}
@@ -44,30 +55,41 @@ func InitEnv(workdir string, subdirs []string) {
 	} else if ok {
 		env.Read(env.file)
 	} else {
-		err := WriteFile(env.file, []byte(BlankConf))
+		bc := opt.BlankConf
+		if len(bc) == 0 {
+			bc = BlankConf
+		}
+		err := WriteFile(env.file, []byte(bc))
 		if err != nil {
 			panic(err)
 		}
-		env.Read(env.file)
+		env.ReadWithBind(env.file, opt.Payload)
+	}
+	return &Env[T]{
+		instance: opt.Payload,
 	}
 }
 
-func NewEnv() *Env {
+func (env *Env[T]) Instance() *T {
+	return env.instance
+}
+
+func NewBaseEnv() *BaseEnv {
 	curUser, err := user.Current()
 	if err != nil {
 		panic(err)
 	}
-	return &Env{
+	return &BaseEnv{
 		user:    curUser,
 		workdir: curUser.HomeDir,
 	}
 }
 
-func (env *Env) Workdir() string {
+func (env *BaseEnv) Workdir() string {
 	return env.workdir
 }
 
-func (env *Env) initWorkspace(dirs []string) error {
+func (env *BaseEnv) initWorkspace(dirs []string) error {
 	workdir := env.workdir
 	if err := SafeMkdirs(workdir); err != nil {
 		return err
@@ -81,11 +103,11 @@ func (env *Env) initWorkspace(dirs []string) error {
 	return nil
 }
 
-func (env *Env) Dump() {
+func (env *BaseEnv) Dump() {
 	fmt.Println("workdir: ", env.workdir)
 }
 
-func (env *Env) Read(path string) {
+func (env *BaseEnv) Read(path string) {
 	env.conf = NewConfFromPath(path)
 	if wd := env.conf.GetString("workdir"); len(wd) > 0 {
 		env.workdir = filepath.ToSlash(wd)
@@ -95,11 +117,22 @@ func (env *Env) Read(path string) {
 	}
 }
 
-func (env *Env) Commit(key string, value any) {
-	env.conf.Set(key, value)
+func (env *BaseEnv) ReadWithBind(path string, payload any) {
+	env.conf = NewConfFromPath(path)
+	if wd := env.conf.GetString("workdir"); len(wd) > 0 {
+		env.workdir = filepath.ToSlash(wd)
+	}
+	if err := env.conf.Unmarshal(payload); err != nil {
+		panic(err)
+	}
 }
 
-func (env *Env) Write() {
+func (env *BaseEnv) Commit(key string, value any) *BaseEnv {
+	env.conf.Set(key, value)
+	return env
+}
+
+func (env *BaseEnv) Write() {
 	if err := env.conf.WriteConfig(); err != nil {
 		panic(err)
 	}

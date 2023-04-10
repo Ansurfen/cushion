@@ -17,7 +17,7 @@ type Render struct {
 	title              string
 	row                uint16
 	col                uint16
-	highlightStyle     HighlightStyls
+	highlightStyle     HighlightStyles
 	highlightCvt       func(string) string
 
 	previousCursor int

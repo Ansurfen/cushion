@@ -366,7 +366,7 @@ func New(executor Executor, completer Completer, opts ...Option) *Prompt {
 			selectedDescriptionBGColor:   Cyan,
 			scrollbarThumbColor:          DarkGray,
 			scrollbarBGColor:             Cyan,
-			highlightStyle:               make(HighlightStyls),
+			highlightStyle:               make(HighlightStyles),
 			modePrefixTextColor:          DefaultColor,
 			modePrefixTtextBGColor:       Purple,
 			modeSuffixTextColor:          DefaultColor,

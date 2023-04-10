@@ -2,7 +2,7 @@ package prompt
 
 import "github.com/charmbracelet/lipgloss"
 
-type HighlightStyls map[string]lipgloss.Style
+type HighlightStyles map[string]lipgloss.Style
 
 type HighlightRule struct {
 	Rule  string

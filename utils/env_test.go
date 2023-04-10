@@ -29,8 +29,8 @@ func TestEnv(t *testing.T) {
 lang: ""
 patiner: ""
 `,
-		Payload: &HuloEnv{},
+		Payload: HuloEnv{},
 	})
-	fmt.Println(huloEnv.Instance())
-	huloEnv.Instance().SetLang("zh_cn").Write()
+	fmt.Println(huloEnv)
+	huloEnv.SetLang("zh_cn").Write()
 }

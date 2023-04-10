@@ -12,9 +12,8 @@ import (
 var env *BaseEnv
 
 const (
-	BlankConf = `workdir: ""
-`
-	ConfFile = "conf.yaml"
+	BlankConf = `workdir: ""`
+	ConfFile  = "conf.yaml"
 )
 
 func GetEnv() *BaseEnv {
@@ -28,18 +27,14 @@ type BaseEnv struct {
 	file    string
 }
 
-type Env[T any] struct {
-	instance *T
-}
-
 type EnvOpt[T any] struct {
-	Payload   *T
+	Payload   T
 	Workdir   string
 	Subdirs   []string
 	BlankConf string
 }
 
-func NewEnv[T any](opt EnvOpt[T]) *Env[T] {
+func NewEnv[T any](opt EnvOpt[T]) *T {
 	env = NewBaseEnv()
 	env.workdir = filepath.ToSlash(path.Join(env.workdir, opt.Workdir))
 	if ok, err := PathIsExist(env.workdir); err != nil {
@@ -53,7 +48,7 @@ func NewEnv[T any](opt EnvOpt[T]) *Env[T] {
 	if ok, err := PathIsExist(env.file); err != nil {
 		panic(err)
 	} else if ok {
-		env.Read(env.file)
+		env.ReadWithBind(env.file, &opt.Payload)
 	} else {
 		bc := opt.BlankConf
 		if len(bc) == 0 {
@@ -63,15 +58,9 @@ func NewEnv[T any](opt EnvOpt[T]) *Env[T] {
 		if err != nil {
 			panic(err)
 		}
-		env.ReadWithBind(env.file, opt.Payload)
+		env.ReadWithBind(env.file, &opt.Payload)
 	}
-	return &Env[T]{
-		instance: opt.Payload,
-	}
-}
-
-func (env *Env[T]) Instance() *T {
-	return env.instance
+	return &opt.Payload
 }
 
 func NewBaseEnv() *BaseEnv {

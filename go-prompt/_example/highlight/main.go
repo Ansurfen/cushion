@@ -7,18 +7,25 @@ import (
 	"github.com/ansurfen/cushion/go-prompt"
 )
 
+const (
+	SYNTAX = iota
+	ROUTER
+)
+
 func completer(in prompt.Document) []prompt.Suggest {
-	s := []prompt.Suggest{
-		{Text: "syntax err", Description: `line 1 column 22 near " COLUMN DateOfBirth, DROP COLUMN ID;" `, Comment: true},
-		{Text: "select", Description: "选择语句"},
-		{Text: "as", Description: "为表取别名"},
-		{Text: "from", Description: "选择表"},
-		{Text: "表名", Description: "以下为mysql数据库存在的表", Comment: true},
-		{Text: "test", Description: ""},
-		{Text: "user", Description: ""},
-	}
+	var s []prompt.Suggest
 	switch in.GetMode() {
-	case 1:
+	case SYNTAX:
+		s = []prompt.Suggest{
+			{Text: "syntax err", Description: `line 1 column 22 near " COLUMN DateOfBirth, DROP COLUMN ID;" `, Comment: true},
+			{Text: "select", Description: "选择语句"},
+			{Text: "as", Description: "为表取别名"},
+			{Text: "from", Description: "选择表"},
+			{Text: "表名", Description: "以下为mysql数据库存在的表", Comment: true},
+			{Text: "test", Description: ""},
+			{Text: "user", Description: ""},
+		}
+	case ROUTER:
 		s = []prompt.Suggest{
 			{Text: "./main.go"},
 			{Text: "./go.sum"},
@@ -33,7 +40,7 @@ func main() {
 		prompt.OptionTitle("sql-prompt"),
 		prompt.OptionRegisterMode([]prompt.CompletionMode{
 			{Name: "语法模式", Attr: prompt.NONE},
-			{Name: "路由模式 按住Ctrl+U切换模式", Attr: prompt.NODSCRIPTION},
+			{Name: "路由模式 按住Ctrl+Y切换模式", Attr: prompt.NODSCRIPTION},
 		}),
 		prompt.OptionHistory([]string{"SELECT * FROM users;"}),
 		prompt.OptionSuggestionTextColor(prompt.White),

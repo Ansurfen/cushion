@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	prompt "github.com/c-bata/go-prompt"
+	prompt "github.com/ansurfen/cushion/go-prompt"
 	"github.com/ansurfen/cushion/go-prompt/internal/debug"
 )
 

@@ -327,7 +327,7 @@ func OptionRegisterMode(modes []CompletionMode) Option {
 		if len(modes) > 0 {
 			prompt.completion.modes = modes
 			prompt.keyBindings = append(prompt.keyBindings, KeyBind{
-				Key: ControlL,
+				Key: ControlY,
 				Fn: func(b *Buffer) {
 					m := (b.Document().GetMode() + 1) % len(modes)
 					b.Document().SetMode(m)
@@ -367,7 +367,7 @@ func New(executor Executor, completer Completer, opts ...Option) *Prompt {
 			scrollbarThumbColor:          DarkGray,
 			scrollbarBGColor:             Cyan,
 			highlightStyle:               make(HighlightStyls),
-			modePrefixTextColor:          Purple,
+			modePrefixTextColor:          DefaultColor,
 			modePrefixTtextBGColor:       Purple,
 			modeSuffixTextColor:          DefaultColor,
 			modeSuffixTtextBGColor:       Purple,

@@ -128,7 +128,7 @@ func (r *Render) renderCompletion(buf *Buffer, completions *CompletionManager) {
 		mode = completions.modes[modeNum]
 		desc := mode.Description
 		if len(desc) == 0 {
-			desc = "Press Ctrl + L to switch mode"
+			desc = "Press Ctrl + Y to switch mode"
 		}
 		if mode.Attr == NODSCRIPTION {
 			formatted, width = formatSuggetionsWithModeWithouDesc(

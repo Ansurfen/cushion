@@ -95,6 +95,10 @@ func (env *Env) Read(path string) {
 	}
 }
 
+func (env *Env) Commit(key string, value any) {
+	env.conf.Set(key, value)
+}
+
 func (env *Env) Write() {
 	if err := env.conf.WriteConfig(); err != nil {
 		panic(err)

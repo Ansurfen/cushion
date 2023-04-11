@@ -6,11 +6,6 @@ import (
 	"testing"
 )
 
-func TestLuaTable(t *testing.T) {
-	tbl := NewLuaTableObj("Ark")
-	fmt.Println(tbl.SetRaw([]string{"describe", "supplier"}, ToLuaString("Ark")))
-}
-
 func TestLuaObject(t *testing.T) {
 	str := NewLuaStringObject("str", "Hello World!")
 	num := NewLuaNumberObject("num", "3.14")
@@ -43,6 +38,13 @@ func TestLuaTableObject(t *testing.T) {
 }
 
 func TestLuaFuncObject(t *testing.T) {
+	CallEvalInstallFunc := func(containers []string, order string) string {
+		cons := []LuaObject{}
+		for _, container := range containers {
+			cons = append(cons, LuaGlobalVar(container))
+		}
+		return NewLuaFuncObject("EvalInstall").SetArgc(2).PCall(LuaList(cons...), LuaGlobalVar(order))
+	}
 	fun := NewLuaFuncObject("EvalInstall").SetArgs([]string{"container", "order"})
 	fmt.Println(fun.PCall(LuaList(LuaGlobalVar("ark1"), LuaGlobalVar("ark2")), LuaTable().SetMap(Luamap{
 		"debug":   LuaFalse,

@@ -92,6 +92,14 @@ func (vm *LuaVM) mount(loaders LuaFuncs) {
 	}
 }
 
+func (vm *LuaVM) MountGlobal(loaders LuaFuncs) {
+	for name, loader := range loaders {
+		if value := vm.state.GetGlobal(name); value.String() == "nil" {
+			vm.state.SetGlobal(name, vm.state.NewFunction(loader))
+		}
+	}
+}
+
 func (vm *LuaVM) EvalFile(fullpath string) error {
 	if path.Ext(fullpath) == ".lua" {
 		return vm.state.DoFile(fullpath)

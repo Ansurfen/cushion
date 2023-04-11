@@ -5,56 +5,6 @@ import (
 	"strings"
 )
 
-func CallEvalInstallFunc(containers []string, order string) string {
-	cons := []LuaObject{}
-	for _, container := range containers {
-		cons = append(cons, LuaGlobalVar(container))
-	}
-	return NewLuaFuncObject("EvalInstall").SetArgc(2).PCall(LuaList(cons...), LuaGlobalVar(order))
-}
-
-type LuaPackageObject struct{}
-
-func (LuaPackageObject) prototype() string {
-	return "package.path = package.path .. [[;]] .. %s"
-}
-
-func (pkg *LuaPackageObject) PCall() string {
-	return fmt.Sprintf(pkg.prototype(), "LoadSDK()")
-}
-
-type LuaTableObj struct {
-	name string
-}
-
-func NewLuaTableObj(name string) LuaTableObj {
-	return LuaTableObj{
-		name: name,
-	}
-}
-
-func (tbl LuaTableObj) SetRaw(fields []string, v string) string {
-	return fmt.Sprintf(`%s.%s = %s`, tbl.name, strings.Join(fields, "."), v)
-}
-
-func LuaSetMap(ident, k, v string) string {
-	return fmt.Sprintf("%s.%s = %s", ident, k, v)
-}
-
-type LuaGlobalObject struct {
-	name string
-}
-
-func NewLuaGlobalObject(name string) LuaGlobalObject {
-	return LuaGlobalObject{
-		name: name,
-	}
-}
-
-func ToLuaString(ident string) string {
-	return fmt.Sprintf(`"%s"`, ident)
-}
-
 type LuaObject interface {
 	Ident() string
 	Value() string

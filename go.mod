@@ -3,14 +3,15 @@ module github.com/ansurfen/cushion
 go 1.20
 
 require (
-	github.com/c-bata/go-prompt v0.2.6
 	github.com/charmbracelet/bubbletea v0.23.1
 	github.com/mattn/go-colorable v0.1.13
 	github.com/mattn/go-runewidth v0.0.14
 	github.com/mattn/go-tty v0.0.4
 	github.com/pkg/term v1.2.0-beta.2
+	go.uber.org/zap v1.21.0
 	golang.org/x/sys v0.7.0
 	golang.org/x/text v0.5.0
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
 require (
@@ -64,6 +65,8 @@ require (
 	github.com/subosito/gotenv v1.4.2 // indirect
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	github.com/yuin/gluamapper v0.0.0-20150323120927-d836955830e7 // indirect
+	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
 	golang.org/x/net v0.4.0 // indirect
 	golang.org/x/term v0.3.0 // indirect

@@ -73,10 +73,26 @@ func OptionPrefixTextColor(x Color) Option {
 	}
 }
 
+// OptionPrefixTextLipglossColor change a text color of prefix string
+func OptionPrefixTextLipglossColor(x lipglossColor) Option {
+	return func(p *Prompt) error {
+		p.renderer.prefixTextColor = x
+		return nil
+	}
+}
+
 // OptionPrefixBackgroundColor to change a background color of prefix string
 func OptionPrefixBackgroundColor(x Color) Option {
 	return func(p *Prompt) error {
 		p.renderer.prefixBGColor = color2lipglossColor(x)
+		return nil
+	}
+}
+
+// OptionPrefixBackgroundLipglossColor to change a background color of prefix string
+func OptionPrefixBackgroundLipglossColor(x lipglossColor) Option {
+	return func(p *Prompt) error {
+		p.renderer.prefixBGColor = x
 		return nil
 	}
 }
@@ -89,10 +105,26 @@ func OptionInputTextColor(x Color) Option {
 	}
 }
 
+// OptionInputTextLipglossColor to change a color of text which is input by user
+func OptionInputTextLipglossColor(x lipglossColor) Option {
+	return func(p *Prompt) error {
+		p.renderer.inputTextColor = x
+		return nil
+	}
+}
+
 // OptionInputBGColor to change a color of background which is input by user
 func OptionInputBGColor(x Color) Option {
 	return func(p *Prompt) error {
 		p.renderer.inputBGColor = color2lipglossColor(x)
+		return nil
+	}
+}
+
+// OptionInputBGLipglossColor to change a color of background which is input by user
+func OptionInputBGLipglossColor(x lipglossColor) Option {
+	return func(p *Prompt) error {
+		p.renderer.inputBGColor = x
 		return nil
 	}
 }
@@ -105,10 +137,26 @@ func OptionPreviewSuggestionTextColor(x Color) Option {
 	}
 }
 
+// OptionPreviewSuggestionTextLipglossColor to change a text color which is completed
+func OptionPreviewSuggestionTextLipglossColor(x lipglossColor) Option {
+	return func(p *Prompt) error {
+		p.renderer.previewSuggestionTextColor = x
+		return nil
+	}
+}
+
 // OptionPreviewSuggestionBGColor to change a background color which is completed
 func OptionPreviewSuggestionBGColor(x Color) Option {
 	return func(p *Prompt) error {
 		p.renderer.previewSuggestionBGColor = color2lipglossColor(x)
+		return nil
+	}
+}
+
+// OptionPreviewSuggestionBGLipglossColor to change a background color which is completed
+func OptionPreviewSuggestionBGLipglossColor(x lipglossColor) Option {
+	return func(p *Prompt) error {
+		p.renderer.previewSuggestionBGColor = x
 		return nil
 	}
 }
@@ -121,10 +169,26 @@ func OptionSuggestionTextColor(x Color) Option {
 	}
 }
 
+// OptionSuggestionTextColor to change a text color in drop down suggestions.
+func OptionSuggestionTextLipglossColor(x lipglossColor) Option {
+	return func(p *Prompt) error {
+		p.renderer.suggestionTextColor = x
+		return nil
+	}
+}
+
 // OptionSuggestionBGColor change a background color in drop down suggestions.
 func OptionSuggestionBGColor(x Color) Option {
 	return func(p *Prompt) error {
 		p.renderer.suggestionBGColor = color2lipglossColor(x)
+		return nil
+	}
+}
+
+// OptionSuggestionBGLipglossColor change a background color in drop down suggestions.
+func OptionSuggestionBGLipglossColor(x lipglossColor) Option {
+	return func(p *Prompt) error {
+		p.renderer.suggestionBGColor = x
 		return nil
 	}
 }
@@ -137,10 +201,26 @@ func OptionSelectedSuggestionTextColor(x Color) Option {
 	}
 }
 
+// OptionSelectedSuggestionTextLipglossColor to change a text color for completed text which is selected inside suggestions drop down box.
+func OptionSelectedSuggestionTextLipglossColor(x lipglossColor) Option {
+	return func(p *Prompt) error {
+		p.renderer.selectedSuggestionTextColor = x
+		return nil
+	}
+}
+
 // OptionSelectedSuggestionBGColor to change a background color for completed text which is selected inside suggestions drop down box.
 func OptionSelectedSuggestionBGColor(x Color) Option {
 	return func(p *Prompt) error {
 		p.renderer.selectedSuggestionBGColor = color2lipglossColor(x)
+		return nil
+	}
+}
+
+// OptionSelectedSuggestionBGLipglossColor to change a background color for completed text which is selected inside suggestions drop down box.
+func OptionSelectedSuggestionBGLipglossColor(x lipglossColor) Option {
+	return func(p *Prompt) error {
+		p.renderer.selectedSuggestionBGColor = x
 		return nil
 	}
 }
@@ -153,10 +233,26 @@ func OptionDescriptionTextColor(x Color) Option {
 	}
 }
 
+// OptionDescriptionTextLipglossColor to change a background color of description text in drop down suggestions.
+func OptionDescriptionTextLipglossColor(x lipglossColor) Option {
+	return func(p *Prompt) error {
+		p.renderer.descriptionTextColor = x
+		return nil
+	}
+}
+
 // OptionDescriptionBGColor to change a background color of description text in drop down suggestions.
 func OptionDescriptionBGColor(x Color) Option {
 	return func(p *Prompt) error {
 		p.renderer.descriptionBGColor = color2lipglossColor(x)
+		return nil
+	}
+}
+
+// OptionDescriptionBGLipglossColor to change a background color of description text in drop down suggestions.
+func OptionDescriptionBGLipglossColor(x lipglossColor) Option {
+	return func(p *Prompt) error {
+		p.renderer.descriptionBGColor = x
 		return nil
 	}
 }
@@ -169,10 +265,26 @@ func OptionSelectedDescriptionTextColor(x Color) Option {
 	}
 }
 
+// OptionSelectedDescriptionTextLipglossColor to change a text color of description which is selected inside suggestions drop down box.
+func OptionSelectedDescriptionTextLipglossColor(x lipglossColor) Option {
+	return func(p *Prompt) error {
+		p.renderer.selectedDescriptionTextColor = x
+		return nil
+	}
+}
+
 // OptionSelectedDescriptionBGColor to change a background color of description which is selected inside suggestions drop down box.
 func OptionSelectedDescriptionBGColor(x Color) Option {
 	return func(p *Prompt) error {
 		p.renderer.selectedDescriptionBGColor = color2lipglossColor(x)
+		return nil
+	}
+}
+
+// OptionSelectedDescriptionBGLipglossColor to change a background color of description which is selected inside suggestions drop down box.
+func OptionSelectedDescriptionBGLipglossColor(x lipglossColor) Option {
+	return func(p *Prompt) error {
+		p.renderer.selectedDescriptionBGColor = x
 		return nil
 	}
 }
@@ -185,10 +297,26 @@ func OptionScrollbarThumbColor(x Color) Option {
 	}
 }
 
+// OptionScrollbarThumbLipglossColor to change a thumb color on scrollbar.
+func OptionScrollbarThumbLipglossColor(x lipglossColor) Option {
+	return func(p *Prompt) error {
+		p.renderer.scrollbarThumbColor = x
+		return nil
+	}
+}
+
 // OptionScrollbarBGColor to change a background color of scrollbar.
 func OptionScrollbarBGColor(x Color) Option {
 	return func(p *Prompt) error {
 		p.renderer.scrollbarBGColor = color2lipglossColor(x)
+		return nil
+	}
+}
+
+// OptionScrollbarBGLipglossColor to change a background color of scrollbar.
+func OptionScrollbarBGLipglossColor(x lipglossColor) Option {
+	return func(p *Prompt) error {
+		p.renderer.scrollbarBGColor = x
 		return nil
 	}
 }
@@ -200,9 +328,23 @@ func OptionModePrefixTextColor(x Color) Option {
 	}
 }
 
+func OptionModePrefixTextLipglossColor(x lipglossColor) Option {
+	return func(p *Prompt) error {
+		p.renderer.modePrefixTextColor = x
+		return nil
+	}
+}
+
 func OptionModePrefixTtextBGColor(x Color) Option {
 	return func(p *Prompt) error {
 		p.renderer.modePrefixTtextBGColor = color2lipglossColor(x)
+		return nil
+	}
+}
+
+func OptionModePrefixTtextBGLipglossColor(x lipglossColor) Option {
+	return func(p *Prompt) error {
+		p.renderer.modePrefixTtextBGColor = x
 		return nil
 	}
 }
@@ -214,9 +356,23 @@ func OptionModeSuffixTextColor(x Color) Option {
 	}
 }
 
+func OptionModeSuffixTextLipglossColor(x lipglossColor) Option {
+	return func(p *Prompt) error {
+		p.renderer.modeSuffixTextColor = x
+		return nil
+	}
+}
+
 func OptionModeSuffixBGColor(x Color) Option {
 	return func(p *Prompt) error {
 		p.renderer.modeSuffixTtextBGColor = color2lipglossColor(x)
+		return nil
+	}
+}
+
+func OptionModeSuffixBGLipglossColor(x lipglossColor) Option {
+	return func(p *Prompt) error {
+		p.renderer.modeSuffixTtextBGColor = x
 		return nil
 	}
 }
@@ -228,9 +384,23 @@ func OptionCommentSuggestionTextColor(x Color) Option {
 	}
 }
 
+func OptionCommentSuggestionTextLipglossColor(x lipglossColor) Option {
+	return func(p *Prompt) error {
+		p.renderer.commentSuggestionTextColor = x
+		return nil
+	}
+}
+
 func OptionCommentSuggestionBGColor(x Color) Option {
 	return func(p *Prompt) error {
 		p.renderer.commentSuggestionBGColor = color2lipglossColor(x)
+		return nil
+	}
+}
+
+func OptionCommentSuggestionBGLipglossColor(x lipglossColor) Option {
+	return func(p *Prompt) error {
+		p.renderer.commentSuggestionBGColor = x
 		return nil
 	}
 }
@@ -242,9 +412,23 @@ func OptionCommentDescriptionTextColor(x Color) Option {
 	}
 }
 
+func OptionCommentDescriptionTextLipglossColor(x lipglossColor) Option {
+	return func(p *Prompt) error {
+		p.renderer.commentDescriptionTextColor = x
+		return nil
+	}
+}
+
 func OptionCommentDescriptionBGColor(x Color) Option {
 	return func(p *Prompt) error {
 		p.renderer.commentDescriptionBGColor = color2lipglossColor(x)
+		return nil
+	}
+}
+
+func OptionCommentDescriptionBGLiglossColor(x lipglossColor) Option {
+	return func(p *Prompt) error {
+		p.renderer.commentDescriptionBGColor = x
 		return nil
 	}
 }

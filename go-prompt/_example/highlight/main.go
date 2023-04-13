@@ -57,8 +57,10 @@ func main() {
 		prompt.OptionScrollbarBGColor(prompt.LightGray),
 		prompt.OptionScrollbarThumbColor(prompt.Cyan),
 		prompt.OptionCommentSuggestionTextColor(prompt.White),
-		prompt.OptionCommentSuggestionBGColor(prompt.Green),
-		prompt.OptionCommentDescriptionBGColor(prompt.Green),
+		// prompt.OptionCommentSuggestionBGColor(prompt.Green),
+		// prompt.OptionCommentDescriptionBGColor(prompt.Green),
+		prompt.OptionCommentSuggestionBGLipglossColor("#ff7b52"),
+		prompt.OptionCommentDescriptionBGLiglossColor("#8866e9"),
 		prompt.OptionHighlight([]prompt.HighlightRule{
 			{Rule: "select", Color: "99"},
 			{Rule: "alter", Color: "160"},

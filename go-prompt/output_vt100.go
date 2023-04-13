@@ -3,6 +3,8 @@ package prompt
 import (
 	"bytes"
 	"strconv"
+
+	"github.com/charmbracelet/lipgloss"
 )
 
 // VT100Writer generates VT100 escape sequences.
@@ -28,6 +30,16 @@ func (w *VT100Writer) WriteRawStr(data string) {
 // WriteStr to write safety string by removing control sequences.
 func (w *VT100Writer) WriteStr(data string) {
 	w.Write([]byte(data))
+}
+
+// WriteColorableRaw to write raw byte array with color
+func (w *VT100Writer) WriteColorableRaw(fg, bg string, bold bool, data []byte) {
+	w.WriteRawStr(lipgloss.NewStyle().Foreground(lipgloss.Color(fg)).Background(lipgloss.Color(bg)).Bold(bold).Render(string(data)))
+}
+
+// WriteColorableRaw to write raw string with color
+func (w *VT100Writer) WriteColorableRawStr(fg, bg string, bold bool, data string) {
+	w.WriteColorableRaw(fg, bg, bold, []byte(data))
 }
 
 /* Erase */

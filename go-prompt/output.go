@@ -44,6 +44,27 @@ const (
 // Color represents color on terminal.
 type Color int
 
+type lipglossColor = string
+
+var ansiHex = [16]string{
+	"0",
+	"1",
+	"2",
+	"3",
+	"4",
+	"5",
+	"6",
+	"7",
+	"8",
+	"9",
+	"10",
+	"11",
+	"12",
+	"13",
+	"14",
+	"15",
+}
+
 const (
 	// DefaultColor represents a default color.
 	DefaultColor Color = iota
@@ -51,7 +72,7 @@ const (
 	// Low intensity
 
 	// Black represents a black.
-	Black
+	Black 
 	// DarkRed represents a dark red.
 	DarkRed
 	// DarkGreen represents a dark green.
@@ -99,6 +120,10 @@ type ConsoleWriter interface {
 	WriteRawStr(data string)
 	// WriteStr to write safety string by removing control sequences.
 	WriteStr(data string)
+	// WriteColorableRaw to write raw byte array with color
+	WriteColorableRaw(fg, bg string, bold bool, data []byte)
+	// WriteColorableRaw to write raw string with color
+	WriteColorableRawStr(fg, bg string, bold bool, data string)
 	// Flush to flush buffer.
 	Flush() error
 

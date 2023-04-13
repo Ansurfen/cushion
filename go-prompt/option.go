@@ -1,5 +1,11 @@
 package prompt
 
+import (
+	"strconv"
+
+	"github.com/muesli/termenv"
+)
+
 // Option is the type to replace default parameters.
 // prompt.New accepts any number of options (this is functional option pattern).
 type Option func(prompt *Prompt) error
@@ -64,7 +70,7 @@ func OptionLivePrefix(f func() (prefix string, useLivePrefix bool)) Option {
 // OptionPrefixTextColor change a text color of prefix string
 func OptionPrefixTextColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.prefixTextColor = x
+		p.renderer.prefixTextColor = color2lipglossColor(x)
 		return nil
 	}
 }
@@ -72,7 +78,7 @@ func OptionPrefixTextColor(x Color) Option {
 // OptionPrefixBackgroundColor to change a background color of prefix string
 func OptionPrefixBackgroundColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.prefixBGColor = x
+		p.renderer.prefixBGColor = color2lipglossColor(x)
 		return nil
 	}
 }
@@ -80,7 +86,7 @@ func OptionPrefixBackgroundColor(x Color) Option {
 // OptionInputTextColor to change a color of text which is input by user
 func OptionInputTextColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.inputTextColor = x
+		p.renderer.inputTextColor = color2lipglossColor(x)
 		return nil
 	}
 }
@@ -88,7 +94,7 @@ func OptionInputTextColor(x Color) Option {
 // OptionInputBGColor to change a color of background which is input by user
 func OptionInputBGColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.inputBGColor = x
+		p.renderer.inputBGColor = color2lipglossColor(x)
 		return nil
 	}
 }
@@ -96,7 +102,7 @@ func OptionInputBGColor(x Color) Option {
 // OptionPreviewSuggestionTextColor to change a text color which is completed
 func OptionPreviewSuggestionTextColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.previewSuggestionTextColor = x
+		p.renderer.previewSuggestionTextColor = color2lipglossColor(x)
 		return nil
 	}
 }
@@ -104,7 +110,7 @@ func OptionPreviewSuggestionTextColor(x Color) Option {
 // OptionPreviewSuggestionBGColor to change a background color which is completed
 func OptionPreviewSuggestionBGColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.previewSuggestionBGColor = x
+		p.renderer.previewSuggestionBGColor = color2lipglossColor(x)
 		return nil
 	}
 }
@@ -112,7 +118,7 @@ func OptionPreviewSuggestionBGColor(x Color) Option {
 // OptionSuggestionTextColor to change a text color in drop down suggestions.
 func OptionSuggestionTextColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.suggestionTextColor = x
+		p.renderer.suggestionTextColor = color2lipglossColor(x)
 		return nil
 	}
 }
@@ -120,7 +126,7 @@ func OptionSuggestionTextColor(x Color) Option {
 // OptionSuggestionBGColor change a background color in drop down suggestions.
 func OptionSuggestionBGColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.suggestionBGColor = x
+		p.renderer.suggestionBGColor = color2lipglossColor(x)
 		return nil
 	}
 }
@@ -128,7 +134,7 @@ func OptionSuggestionBGColor(x Color) Option {
 // OptionSelectedSuggestionTextColor to change a text color for completed text which is selected inside suggestions drop down box.
 func OptionSelectedSuggestionTextColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.selectedSuggestionTextColor = x
+		p.renderer.selectedSuggestionTextColor = color2lipglossColor(x)
 		return nil
 	}
 }
@@ -136,7 +142,7 @@ func OptionSelectedSuggestionTextColor(x Color) Option {
 // OptionSelectedSuggestionBGColor to change a background color for completed text which is selected inside suggestions drop down box.
 func OptionSelectedSuggestionBGColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.selectedSuggestionBGColor = x
+		p.renderer.selectedSuggestionBGColor = color2lipglossColor(x)
 		return nil
 	}
 }
@@ -144,7 +150,7 @@ func OptionSelectedSuggestionBGColor(x Color) Option {
 // OptionDescriptionTextColor to change a background color of description text in drop down suggestions.
 func OptionDescriptionTextColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.descriptionTextColor = x
+		p.renderer.descriptionTextColor = color2lipglossColor(x)
 		return nil
 	}
 }
@@ -152,7 +158,7 @@ func OptionDescriptionTextColor(x Color) Option {
 // OptionDescriptionBGColor to change a background color of description text in drop down suggestions.
 func OptionDescriptionBGColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.descriptionBGColor = x
+		p.renderer.descriptionBGColor = color2lipglossColor(x)
 		return nil
 	}
 }
@@ -160,7 +166,7 @@ func OptionDescriptionBGColor(x Color) Option {
 // OptionSelectedDescriptionTextColor to change a text color of description which is selected inside suggestions drop down box.
 func OptionSelectedDescriptionTextColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.selectedDescriptionTextColor = x
+		p.renderer.selectedDescriptionTextColor = color2lipglossColor(x)
 		return nil
 	}
 }
@@ -168,7 +174,7 @@ func OptionSelectedDescriptionTextColor(x Color) Option {
 // OptionSelectedDescriptionBGColor to change a background color of description which is selected inside suggestions drop down box.
 func OptionSelectedDescriptionBGColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.selectedDescriptionBGColor = x
+		p.renderer.selectedDescriptionBGColor = color2lipglossColor(x)
 		return nil
 	}
 }
@@ -176,7 +182,7 @@ func OptionSelectedDescriptionBGColor(x Color) Option {
 // OptionScrollbarThumbColor to change a thumb color on scrollbar.
 func OptionScrollbarThumbColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.scrollbarThumbColor = x
+		p.renderer.scrollbarThumbColor = color2lipglossColor(x)
 		return nil
 	}
 }
@@ -184,63 +190,63 @@ func OptionScrollbarThumbColor(x Color) Option {
 // OptionScrollbarBGColor to change a background color of scrollbar.
 func OptionScrollbarBGColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.scrollbarBGColor = x
+		p.renderer.scrollbarBGColor = color2lipglossColor(x)
 		return nil
 	}
 }
 
 func OptionModePrefixTextColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.modePrefixTextColor = x
+		p.renderer.modePrefixTextColor = color2lipglossColor(x)
 		return nil
 	}
 }
 
 func OptionModePrefixTtextBGColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.modePrefixTtextBGColor = x
+		p.renderer.modePrefixTtextBGColor = color2lipglossColor(x)
 		return nil
 	}
 }
 
 func OptionModeSuffixTextColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.modeSuffixTextColor = x
+		p.renderer.modeSuffixTextColor = color2lipglossColor(x)
 		return nil
 	}
 }
 
 func OptionModeSuffixBGColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.modeSuffixTtextBGColor = x
+		p.renderer.modeSuffixTtextBGColor = color2lipglossColor(x)
 		return nil
 	}
 }
 
 func OptionCommentSuggestionTextColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.commentSuggestionTextColor = x
+		p.renderer.commentSuggestionTextColor = color2lipglossColor(x)
 		return nil
 	}
 }
 
 func OptionCommentSuggestionBGColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.commentSuggestionBGColor = x
+		p.renderer.commentSuggestionBGColor = color2lipglossColor(x)
 		return nil
 	}
 }
 
 func OptionCommentDescriptionTextColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.commentDescriptionTextColor = x
+		p.renderer.commentDescriptionTextColor = color2lipglossColor(x)
 		return nil
 	}
 }
 
 func OptionCommentDescriptionBGColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.commentDescriptionBGColor = x
+		p.renderer.commentDescriptionBGColor = color2lipglossColor(x)
 		return nil
 	}
 }
@@ -350,31 +356,31 @@ func New(executor Executor, completer Completer, opts ...Option) *Prompt {
 			prefix:                       "> ",
 			out:                          defaultWriter,
 			livePrefixCallback:           func() (string, bool) { return "", false },
-			prefixTextColor:              Blue,
-			prefixBGColor:                DefaultColor,
-			inputTextColor:               DefaultColor,
-			inputBGColor:                 DefaultColor,
-			previewSuggestionTextColor:   Green,
-			previewSuggestionBGColor:     DefaultColor,
-			suggestionTextColor:          White,
-			suggestionBGColor:            Cyan,
-			selectedSuggestionTextColor:  Black,
-			selectedSuggestionBGColor:    Turquoise,
-			descriptionTextColor:         Black,
-			descriptionBGColor:           Turquoise,
-			selectedDescriptionTextColor: White,
-			selectedDescriptionBGColor:   Cyan,
-			scrollbarThumbColor:          DarkGray,
-			scrollbarBGColor:             Cyan,
+			prefixTextColor:              ansiHex[termenv.ANSIBlue],
+			prefixBGColor:                ansiHex[termenv.ANSIBlack],
+			inputTextColor:               ansiHex[termenv.ANSIBlack],
+			inputBGColor:                 ansiHex[termenv.ANSIBlack],
+			previewSuggestionTextColor:   ansiHex[termenv.ANSIGreen],
+			previewSuggestionBGColor:     ansiHex[termenv.ANSIBlack],
+			suggestionTextColor:          ansiHex[termenv.ANSIBrightWhite],
+			suggestionBGColor:            ansiHex[termenv.ANSIBrightCyan],
+			selectedSuggestionTextColor:  ansiHex[termenv.ANSIBlack],
+			selectedSuggestionBGColor:    ansiHex[termenv.ANSIBrightCyan],
+			descriptionTextColor:         ansiHex[termenv.ANSIBlack],
+			descriptionBGColor:           ansiHex[termenv.ANSIBrightCyan],
+			selectedDescriptionTextColor: ansiHex[termenv.ANSIBrightWhite],
+			selectedDescriptionBGColor:   ansiHex[termenv.ANSIBrightCyan],
+			scrollbarThumbColor:          ansiHex[termenv.ANSIBrightBlack],
+			scrollbarBGColor:             ansiHex[termenv.ANSIBrightCyan],
 			highlightStyle:               make(HighlightStyles),
-			modePrefixTextColor:          DefaultColor,
-			modePrefixTtextBGColor:       Purple,
-			modeSuffixTextColor:          DefaultColor,
-			modeSuffixTtextBGColor:       Purple,
-			commentSuggestionTextColor:   DefaultColor,
-			commentSuggestionBGColor:     DefaultColor,
-			commentDescriptionTextColor:  DefaultColor,
-			commentDescriptionBGColor:    DefaultColor,
+			modePrefixTextColor:          ansiHex[termenv.ANSIBlack],
+			modePrefixTtextBGColor:       ansiHex[termenv.ANSIMagenta],
+			modeSuffixTextColor:          ansiHex[termenv.ANSIBlack],
+			modeSuffixTtextBGColor:       ansiHex[termenv.ANSIMagenta],
+			commentSuggestionTextColor:   ansiHex[termenv.ANSIBlack],
+			commentSuggestionBGColor:     ansiHex[termenv.ANSIBlack],
+			commentDescriptionTextColor:  ansiHex[termenv.ANSIBlack],
+			commentDescriptionBGColor:    ansiHex[termenv.ANSIBlack],
 		},
 		buf:         NewBuffer(),
 		executor:    executor,
@@ -389,4 +395,11 @@ func New(executor Executor, completer Completer, opts ...Option) *Prompt {
 		}
 	}
 	return pt
+}
+
+func color2lipglossColor(c Color) string {
+	if c <= 0 || c > 16 {
+		return "0"
+	}
+	return strconv.Itoa(int(c-1))
 }

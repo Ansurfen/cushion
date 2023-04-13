@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/ansurfen/cushion/go-prompt"
+	"github.com/charmbracelet/lipgloss"
 )
 
 const (
@@ -54,6 +56,8 @@ func main() {
 
 		prompt.OptionScrollbarBGColor(prompt.LightGray),
 		prompt.OptionScrollbarThumbColor(prompt.Cyan),
+		prompt.OptionCommentSuggestionTextColor(prompt.White),
+		prompt.OptionCommentSuggestionBGColor(prompt.Green),
 		prompt.OptionCommentDescriptionBGColor(prompt.Green),
 		prompt.OptionHighlight([]prompt.HighlightRule{
 			{Rule: "select", Color: "99"},
@@ -67,4 +71,7 @@ func main() {
 			return strings.ToLower(s)
 		}))
 	fmt.Println("Your input: " + in)
+	for i := 0; i < 255; i++ {
+		fmt.Print(lipgloss.NewStyle().Background(lipgloss.Color(strconv.Itoa(i))).Render(" "))
+	}
 }

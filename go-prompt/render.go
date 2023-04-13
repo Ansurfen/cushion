@@ -6,6 +6,7 @@ import (
 
 	"github.com/ansurfen/cushion/go-prompt/internal/debug"
 	runewidth "github.com/mattn/go-runewidth"
+	"github.com/muesli/termenv"
 )
 
 // Render to render prompt information from state of Buffer.
@@ -23,30 +24,30 @@ type Render struct {
 	previousCursor int
 
 	// colors,
-	prefixTextColor              Color
-	prefixBGColor                Color
-	inputTextColor               Color
-	inputBGColor                 Color
-	previewSuggestionTextColor   Color
-	previewSuggestionBGColor     Color
-	suggestionTextColor          Color
-	suggestionBGColor            Color
-	selectedSuggestionTextColor  Color
-	selectedSuggestionBGColor    Color
-	descriptionTextColor         Color
-	descriptionBGColor           Color
-	selectedDescriptionTextColor Color
-	selectedDescriptionBGColor   Color
-	scrollbarThumbColor          Color
-	scrollbarBGColor             Color
-	modePrefixTextColor          Color
-	modePrefixTtextBGColor       Color
-	modeSuffixTextColor          Color
-	modeSuffixTtextBGColor       Color
-	commentSuggestionTextColor   Color
-	commentSuggestionBGColor     Color
-	commentDescriptionTextColor  Color
-	commentDescriptionBGColor    Color
+	prefixTextColor              lipglossColor
+	prefixBGColor                lipglossColor
+	inputTextColor               lipglossColor
+	inputBGColor                 lipglossColor
+	previewSuggestionTextColor   lipglossColor
+	previewSuggestionBGColor     lipglossColor
+	suggestionTextColor          lipglossColor
+	suggestionBGColor            lipglossColor
+	selectedSuggestionTextColor  lipglossColor
+	selectedSuggestionBGColor    lipglossColor
+	descriptionTextColor         lipglossColor
+	descriptionBGColor           lipglossColor
+	selectedDescriptionTextColor lipglossColor
+	selectedDescriptionBGColor   lipglossColor
+	scrollbarThumbColor          lipglossColor
+	scrollbarBGColor             lipglossColor
+	modePrefixTextColor          lipglossColor
+	modePrefixTtextBGColor       lipglossColor
+	modeSuffixTextColor          lipglossColor
+	modeSuffixTtextBGColor       lipglossColor
+	commentSuggestionTextColor   lipglossColor
+	commentSuggestionBGColor     lipglossColor
+	commentDescriptionTextColor  lipglossColor
+	commentDescriptionBGColor    lipglossColor
 }
 
 // Setup to initialize console output.
@@ -67,7 +68,8 @@ func (r *Render) getCurrentPrefix() string {
 }
 
 func (r *Render) renderPrefix() {
-	r.out.SetColor(r.prefixTextColor, r.prefixBGColor, false)
+	// r.out.WriteColorableRawStr(r.prefixTextColor, r.prefixBGColor, false, r.getCurrentPrefix())
+	r.out.SetColor(DefaultColor, DefaultColor, false)
 	r.out.WriteStr(r.getCurrentPrefix())
 	r.out.SetColor(DefaultColor, DefaultColor, false)
 }
@@ -103,11 +105,8 @@ func (r *Render) renderWindowTooSmall() {
 
 func (r *Render) renderMode(mode Suggest) {
 	r.out.CursorDown(1)
-	r.out.SetColor(r.modePrefixTextColor, r.modePrefixTtextBGColor, false)
-	r.out.WriteStr(mode.Text)
-	r.out.SetColor(r.modeSuffixTextColor, r.modeSuffixTtextBGColor, false)
-	r.out.WriteStr(mode.Description)
-	r.out.WriteStr(" ")
+	r.out.WriteColorableRawStr(r.modePrefixTextColor, r.modePrefixTtextBGColor, false, mode.Text)
+	r.out.WriteColorableRawStr(r.modeSuffixTextColor, r.modeSuffixTtextBGColor, false, mode.Description+" ")
 	r.out.SetColor(DefaultColor, DefaultColor, false)
 }
 
@@ -191,31 +190,27 @@ func (r *Render) renderCompletion(buf *Buffer, completions *CompletionManager) {
 	for i := 0; i < windowHeight; i++ {
 		r.out.CursorDown(1)
 		if formatted[i].Comment {
-			r.out.SetColor(r.commentSuggestionTextColor, r.commentSuggestionBGColor, false)
-			r.out.WriteStr(formatted[i].Text)
-			r.out.SetColor(r.commentDescriptionTextColor, r.commentDescriptionBGColor, false)
+			r.out.WriteColorableRawStr(r.commentSuggestionTextColor, r.commentSuggestionBGColor, false, formatted[i].Text)
+			r.out.WriteColorableRawStr(r.commentDescriptionTextColor, r.commentDescriptionBGColor, false, formatted[i].Description)
 		} else {
 			if i == selected {
-				r.out.SetColor(r.selectedSuggestionTextColor, r.selectedSuggestionBGColor, true)
+				r.out.WriteColorableRawStr(r.selectedSuggestionTextColor, r.selectedSuggestionBGColor, true, formatted[i].Text)
 			} else {
-				r.out.SetColor(r.suggestionTextColor, r.suggestionBGColor, false)
+				r.out.WriteColorableRawStr(r.suggestionTextColor, r.suggestionBGColor, false, formatted[i].Text)
 			}
-			r.out.WriteStr(formatted[i].Text)
 
 			if i == selected {
-				r.out.SetColor(r.selectedDescriptionTextColor, r.selectedDescriptionBGColor, false)
+				r.out.WriteColorableRawStr(r.selectedDescriptionTextColor, r.selectedDescriptionBGColor, false, formatted[i].Description)
 			} else {
-				r.out.SetColor(r.descriptionTextColor, r.descriptionBGColor, false)
+				r.out.WriteColorableRawStr(r.descriptionTextColor, r.descriptionBGColor, false, formatted[i].Description)
 			}
 		}
-		r.out.WriteStr(formatted[i].Description)
 
 		if isScrollThumb(i) {
-			r.out.SetColor(DefaultColor, r.scrollbarThumbColor, false)
+			r.out.WriteColorableRawStr(ansiHex[termenv.ANSIBlack], r.scrollbarThumbColor, false, " ")
 		} else {
-			r.out.SetColor(DefaultColor, r.scrollbarBGColor, false)
+			r.out.WriteColorableRawStr(ansiHex[termenv.ANSIBlack], r.scrollbarBGColor, false, " ")
 		}
-		r.out.WriteStr(" ")
 		r.out.SetColor(DefaultColor, DefaultColor, false)
 
 		r.lineWrap(cursor + width)
@@ -272,8 +267,7 @@ func (r *Render) Render(buffer *Buffer, completion *CompletionManager) {
 	if suggest, ok := completion.GetSelectedSuggestion(); ok {
 		cursor = r.backward(cursor, runewidth.StringWidth(buffer.Document().GetWordBeforeCursorUntilSeparator(completion.wordSeparator)))
 
-		r.out.SetColor(r.previewSuggestionTextColor, r.previewSuggestionBGColor, false)
-		r.out.WriteStr(suggest.Text)
+		r.out.WriteColorableRawStr(r.previewSuggestionTextColor, r.previewSuggestionBGColor, false, suggest.Text)
 		r.out.SetColor(DefaultColor, DefaultColor, false)
 		cursor += runewidth.StringWidth(suggest.Text)
 
@@ -293,8 +287,7 @@ func (r *Render) BreakLine(buffer *Buffer) {
 	cursor := runewidth.StringWidth(buffer.Document().TextBeforeCursor()) + runewidth.StringWidth(r.getCurrentPrefix())
 	r.clear(cursor)
 	r.renderPrefix()
-	r.out.SetColor(r.inputTextColor, r.inputBGColor, false)
-	r.out.WriteStr(buffer.Document().Text + "\n")
+	r.out.WriteColorableRawStr(r.inputTextColor, r.inputBGColor, false, buffer.Document().Text+"\n")
 	r.out.SetColor(DefaultColor, DefaultColor, false)
 	debug.AssertNoError(r.out.Flush())
 	if r.breakLineCallback != nil {
@@ -349,7 +342,7 @@ func (r *Render) renderInput(line string) {
 		if style, ok := r.highlightStyle[strings.TrimRight(l, " ")]; ok {
 			r.out.WriteRawStr(style.Render(strings.TrimRight(raw, " ")) + strings.Repeat(" ", len(l)-len(strings.TrimRight(l, " "))))
 		} else {
-			r.out.SetColor(r.inputTextColor, r.inputBGColor, false)
+			r.out.SetColor(DefaultColor, DefaultColor, false)
 			r.out.WriteRawStr(raw)
 			r.out.SetColor(DefaultColor, DefaultColor, false)
 		}

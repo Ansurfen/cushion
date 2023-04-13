@@ -143,7 +143,7 @@ func Exec(arg ...string) ([]byte, error) {
 		}
 		return out, nil
 	case "linux":
-		out, err := exec.Command("bash", append([]string{"/C"}, arg...)...).CombinedOutput()
+		out, err := exec.Command("/bin/bash", append([]string{"/C"}, arg...)...).CombinedOutput()
 		if err != nil {
 			return out, err
 		}

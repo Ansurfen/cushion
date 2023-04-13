@@ -1,20 +1,21 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"unsafe"
 )
 
-type ReflectEngine struct {
+type ReflectObject struct {
 	raw    any
 	rt     reflect.Type
 	rv     reflect.Value
 	fields map[string]reflect.Value
 }
 
-func NewReflectEngine(data any) *ReflectEngine {
-	re := &ReflectEngine{raw: data}
+func NewReflectObject(data any) *ReflectObject {
+	re := &ReflectObject{raw: data}
 	if rv := reflect.ValueOf(data); rv.Kind() == reflect.Ptr {
 		re.rt = reflect.TypeOf(data).Elem()
 		re.rv = rv.Elem()
@@ -31,14 +32,17 @@ func NewReflectEngine(data any) *ReflectEngine {
 	return re
 }
 
-func (re *ReflectEngine) DumpFields() {
+func (re *ReflectObject) DumpFields() {
 	for name, value := range re.fields {
 		fmt.Println(name, value)
 	}
 }
 
-func (re *ReflectEngine) Set(field string, value any) error {
+func (re *ReflectObject) Set(field string, value any) error {
 	v := re.fields[field]
+	if !v.IsValid() {
+		return errors.New("invalid field")
+	}
 	if v.CanAddr() {
 		rv := reflect.ValueOf(value)
 		if v.Kind() != rv.Kind() {
@@ -58,7 +62,7 @@ func (re *ReflectEngine) Set(field string, value any) error {
 	return nil
 }
 
-func (re *ReflectEngine) Get(field string) reflect.Value {
+func (re *ReflectObject) Get(field string) reflect.Value {
 	v := re.fields[field]
 	if v.CanAddr() {
 		reflect.ValueOf(re.raw).Elem().FieldByName(field)
@@ -67,7 +71,7 @@ func (re *ReflectEngine) Get(field string) reflect.Value {
 	return v
 }
 
-func (re *ReflectEngine) Raw() any {
+func (re *ReflectObject) Raw() any {
 	return re.raw
 }
 

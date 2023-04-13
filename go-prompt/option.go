@@ -2,8 +2,6 @@ package prompt
 
 import (
 	"strconv"
-
-	"github.com/muesli/termenv"
 )
 
 // Option is the type to replace default parameters.
@@ -356,31 +354,31 @@ func New(executor Executor, completer Completer, opts ...Option) *Prompt {
 			prefix:                       "> ",
 			out:                          defaultWriter,
 			livePrefixCallback:           func() (string, bool) { return "", false },
-			prefixTextColor:              ansiHex[termenv.ANSIBlue],
-			prefixBGColor:                ansiHex[termenv.ANSIBlack],
-			inputTextColor:               ansiHex[termenv.ANSIBlack],
-			inputBGColor:                 ansiHex[termenv.ANSIBlack],
-			previewSuggestionTextColor:   ansiHex[termenv.ANSIGreen],
-			previewSuggestionBGColor:     ansiHex[termenv.ANSIBlack],
-			suggestionTextColor:          ansiHex[termenv.ANSIBrightWhite],
-			suggestionBGColor:            ansiHex[termenv.ANSIBrightCyan],
-			selectedSuggestionTextColor:  ansiHex[termenv.ANSIBlack],
-			selectedSuggestionBGColor:    ansiHex[termenv.ANSIBrightCyan],
-			descriptionTextColor:         ansiHex[termenv.ANSIBlack],
-			descriptionBGColor:           ansiHex[termenv.ANSIBrightCyan],
-			selectedDescriptionTextColor: ansiHex[termenv.ANSIBrightWhite],
-			selectedDescriptionBGColor:   ansiHex[termenv.ANSIBrightCyan],
-			scrollbarThumbColor:          ansiHex[termenv.ANSIBrightBlack],
-			scrollbarBGColor:             ansiHex[termenv.ANSIBrightCyan],
+			prefixTextColor:              color2lipglossColor(Blue),
+			prefixBGColor:                color2lipglossColor(DefaultColor),
+			inputTextColor:               color2lipglossColor(DefaultColor),
+			inputBGColor:                 color2lipglossColor(DefaultColor),
+			previewSuggestionTextColor:   color2lipglossColor(Green),
+			previewSuggestionBGColor:     color2lipglossColor(DefaultColor),
+			suggestionTextColor:          color2lipglossColor(White),
+			suggestionBGColor:            color2lipglossColor(Cyan),
+			selectedSuggestionTextColor:  color2lipglossColor(Black),
+			selectedSuggestionBGColor:    color2lipglossColor(Turquoise),
+			descriptionTextColor:         color2lipglossColor(DefaultColor),
+			descriptionBGColor:           color2lipglossColor(Turquoise),
+			selectedDescriptionTextColor: color2lipglossColor(White),
+			selectedDescriptionBGColor:   color2lipglossColor(Cyan),
+			scrollbarThumbColor:          color2lipglossColor(DarkGray),
+			scrollbarBGColor:             color2lipglossColor(Cyan),
 			highlightStyle:               make(HighlightStyles),
-			modePrefixTextColor:          ansiHex[termenv.ANSIBlack],
-			modePrefixTtextBGColor:       ansiHex[termenv.ANSIMagenta],
-			modeSuffixTextColor:          ansiHex[termenv.ANSIBlack],
-			modeSuffixTtextBGColor:       ansiHex[termenv.ANSIMagenta],
-			commentSuggestionTextColor:   ansiHex[termenv.ANSIBlack],
-			commentSuggestionBGColor:     ansiHex[termenv.ANSIBlack],
-			commentDescriptionTextColor:  ansiHex[termenv.ANSIBlack],
-			commentDescriptionBGColor:    ansiHex[termenv.ANSIBlack],
+			modePrefixTextColor:          color2lipglossColor(DefaultColor),
+			modePrefixTtextBGColor:       color2lipglossColor(Purple),
+			modeSuffixTextColor:          color2lipglossColor(DefaultColor),
+			modeSuffixTtextBGColor:       color2lipglossColor(Purple),
+			commentSuggestionTextColor:   color2lipglossColor(DefaultColor),
+			commentSuggestionBGColor:     color2lipglossColor(DefaultColor),
+			commentDescriptionTextColor:  color2lipglossColor(DefaultColor),
+			commentDescriptionBGColor:    color2lipglossColor(DefaultColor),
 		},
 		buf:         NewBuffer(),
 		executor:    executor,
@@ -401,5 +399,5 @@ func color2lipglossColor(c Color) string {
 	if c <= 0 || c > 16 {
 		return "0"
 	}
-	return strconv.Itoa(int(c-1))
+	return strconv.Itoa(int(c - 1))
 }

@@ -6,7 +6,6 @@ import (
 
 	"github.com/ansurfen/cushion/go-prompt/internal/debug"
 	runewidth "github.com/mattn/go-runewidth"
-	"github.com/muesli/termenv"
 )
 
 // Render to render prompt information from state of Buffer.
@@ -207,9 +206,9 @@ func (r *Render) renderCompletion(buf *Buffer, completions *CompletionManager) {
 		}
 
 		if isScrollThumb(i) {
-			r.out.WriteColorableRawStr(ansiHex[termenv.ANSIBlack], r.scrollbarThumbColor, false, " ")
+			r.out.WriteColorableRawStr(color2lipglossColor(DefaultColor), r.scrollbarThumbColor, false, " ")
 		} else {
-			r.out.WriteColorableRawStr(ansiHex[termenv.ANSIBlack], r.scrollbarBGColor, false, " ")
+			r.out.WriteColorableRawStr(color2lipglossColor(DefaultColor), r.scrollbarBGColor, false, " ")
 		}
 		r.out.SetColor(DefaultColor, DefaultColor, false)
 

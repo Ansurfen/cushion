@@ -2,6 +2,8 @@ package prompt
 
 import (
 	"strconv"
+
+	"github.com/ansurfen/cushion/utils"
 )
 
 // Option is the type to replace default parameters.
@@ -335,16 +337,16 @@ func OptionModePrefixTextLipglossColor(x lipglossColor) Option {
 	}
 }
 
-func OptionModePrefixTtextBGColor(x Color) Option {
+func OptionModePrefixTextBGColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.modePrefixTtextBGColor = color2lipglossColor(x)
+		p.renderer.modePrefixTextBGColor = color2lipglossColor(x)
 		return nil
 	}
 }
 
-func OptionModePrefixTtextBGLipglossColor(x lipglossColor) Option {
+func OptionModePrefixTextBGLipglossColor(x lipglossColor) Option {
 	return func(p *Prompt) error {
-		p.renderer.modePrefixTtextBGColor = x
+		p.renderer.modePrefixTextBGColor = x
 		return nil
 	}
 }
@@ -365,14 +367,14 @@ func OptionModeSuffixTextLipglossColor(x lipglossColor) Option {
 
 func OptionModeSuffixBGColor(x Color) Option {
 	return func(p *Prompt) error {
-		p.renderer.modeSuffixTtextBGColor = color2lipglossColor(x)
+		p.renderer.modeSuffixTextBGColor = color2lipglossColor(x)
 		return nil
 	}
 }
 
 func OptionModeSuffixBGLipglossColor(x lipglossColor) Option {
 	return func(p *Prompt) error {
-		p.renderer.modeSuffixTtextBGColor = x
+		p.renderer.modeSuffixTextBGColor = x
 		return nil
 	}
 }
@@ -429,6 +431,14 @@ func OptionCommentDescriptionBGColor(x Color) Option {
 func OptionCommentDescriptionBGLiglossColor(x lipglossColor) Option {
 	return func(p *Prompt) error {
 		p.renderer.commentDescriptionBGColor = x
+		return nil
+	}
+}
+
+func OptionColor(field string, color string) Option {
+	return func(p *Prompt) error {
+		r := utils.NewReflectObject(p.renderer)
+		r.Set(utils.FirstLower(field), color)
 		return nil
 	}
 }
@@ -556,9 +566,9 @@ func New(executor Executor, completer Completer, opts ...Option) *Prompt {
 			scrollbarBGColor:             color2lipglossColor(Cyan),
 			highlightStyle:               make(HighlightStyles),
 			modePrefixTextColor:          color2lipglossColor(DefaultColor),
-			modePrefixTtextBGColor:       color2lipglossColor(Purple),
+			modePrefixTextBGColor:        color2lipglossColor(Purple),
 			modeSuffixTextColor:          color2lipglossColor(DefaultColor),
-			modeSuffixTtextBGColor:       color2lipglossColor(Purple),
+			modeSuffixTextBGColor:        color2lipglossColor(Purple),
 			commentSuggestionTextColor:   color2lipglossColor(DefaultColor),
 			commentSuggestionBGColor:     color2lipglossColor(DefaultColor),
 			commentDescriptionTextColor:  color2lipglossColor(DefaultColor),

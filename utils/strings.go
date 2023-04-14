@@ -316,6 +316,13 @@ func FirstUpper(s string) string {
 	return strings.ToUpper(s[:1]) + s[1:]
 }
 
+func FirstLower(s string) string {
+	if s == "" {
+		return ""
+	}
+	return strings.ToLower(s[:1]) + s[1:]
+}
+
 func TrimMultiSpace(s string) string {
 	s1 := strings.Replace(s, "	", " ", -1)
 	regstr := "\\s{2,}"

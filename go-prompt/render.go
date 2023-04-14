@@ -40,9 +40,9 @@ type Render struct {
 	scrollbarThumbColor          lipglossColor
 	scrollbarBGColor             lipglossColor
 	modePrefixTextColor          lipglossColor
-	modePrefixTtextBGColor       lipglossColor
+	modePrefixTextBGColor        lipglossColor
 	modeSuffixTextColor          lipglossColor
-	modeSuffixTtextBGColor       lipglossColor
+	modeSuffixTextBGColor        lipglossColor
 	commentSuggestionTextColor   lipglossColor
 	commentSuggestionBGColor     lipglossColor
 	commentDescriptionTextColor  lipglossColor
@@ -104,8 +104,8 @@ func (r *Render) renderWindowTooSmall() {
 
 func (r *Render) renderMode(mode Suggest) {
 	r.out.CursorDown(1)
-	r.out.WriteColorableRawStr(r.modePrefixTextColor, r.modePrefixTtextBGColor, false, mode.Text)
-	r.out.WriteColorableRawStr(r.modeSuffixTextColor, r.modeSuffixTtextBGColor, false, mode.Description+" ")
+	r.out.WriteColorableRawStr(r.modePrefixTextColor, r.modePrefixTextBGColor, false, mode.Text)
+	r.out.WriteColorableRawStr(r.modeSuffixTextColor, r.modeSuffixTextBGColor, false, mode.Description+" ")
 	r.out.SetColor(DefaultColor, DefaultColor, false)
 }
 

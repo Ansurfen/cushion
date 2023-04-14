@@ -72,30 +72,38 @@ func vmSetGlobal(lvm *lua.LState) int {
 
 func loadTui(lvm *lua.LState) int {
 	return LuaModuleLoader(lvm, LuaFuncs{
-		"FancyList":  tuiFancyList,
-		"SimpleList": tuiSimpleList,
-		"Spinner":    tuiSpinner,
+		"FancyList":    tuiFancyList,
+		"SimpleList":   tuiSimpleList,
+		"Spinner":      tuiSpinner,
+		"TextInput":    tuiTextInput,
+		"MultiSelect":  tuiMultiSelect,
+		"BatchSpinner": tuiBatchSpinner,
 	})
 }
 
 func tuiSpinner(lvm *lua.LState) int {
 	components.UseSpinner(components.DefaultSpinnerStyle(), &components.SpinnerPayLoad{
 		Callback: func() {
-			errHandle(lvm, LuaDoFunc(lvm, lvm.CheckFunction(1)))
+			LuaDoFunc(lvm, lvm.CheckFunction(1))
 		},
 	})
 	return 0
 }
 
 func tuiFancyList(lvm *lua.LState) int {
-	components.UseFancyList(components.DefaultFancyListStyle(), &components.FancyListPayLoad{
-		Title: "",
-		Choices: []list.Item{components.FancyListItem{
-			ChoiceTitle:  "a",
-			ChoiceDetial: "bb",
-		}},
+	items := []list.Item{}
+	lvm.CheckTable(1).ForEach(func(idx, item lua.LValue) {
+		items = append(items, components.FancyListItem{
+			ChoiceTitle:  item.(*lua.LTable).RawGetString("title").String(),
+			ChoiceDetail: item.(*lua.LTable).RawGetString("detail").String(),
+		})
 	})
-	return 0
+	choice := components.UseFancyList(components.DefaultFancyListStyle(), &components.FancyListPayLoad{
+		Title:   "",
+		Choices: items,
+	})
+	lvm.Push(luar.New(lvm, choice))
+	return 1
 }
 
 func tuiSimpleList(lvm *lua.LState) int {
@@ -114,6 +122,76 @@ func tuiSimpleList(lvm *lua.LState) int {
 	style.TitleStyle = lipgloss.NewStyle()
 	out := components.UseSimpleList(style, payload)
 	lvm.Push(lua.LNumber(out))
+	return 1
+}
+
+func tuiTextInput(lvm *lua.LState) int {
+	texts := []components.TextInputFormat{}
+	lvm.CheckTable(1).ForEach(func(idx, tbl lua.LValue) {
+		text := tbl.(*lua.LTable)
+		echomode := false
+		switch text.RawGetString("echomode").String() {
+		case "true":
+			echomode = true
+		default:
+		}
+		texts = append(texts, components.TextInputFormat{
+			Name:     text.RawGetString("name").String(),
+			EchoMode: echomode,
+		})
+	})
+	if len(texts) > 0 {
+		res := components.UseTextInput(components.DefaultTextStyle(), &components.TextInputPayLoad{
+			Texts: texts,
+		})
+		tbl := &lua.LTable{}
+		for _, r := range res {
+			tbl.Append(lua.LString(r))
+		}
+		lvm.Push(tbl)
+		return 1
+	}
+	return 0
+}
+
+func tuiMultiSelect(lvm *lua.LState) int {
+	tbl := lvm.CheckTable(1)
+	title := tbl.RawGetString("title").String()
+	choices := []string{}
+	tbl.RawGetString("choices").(*lua.LTable).ForEach(func(idx, choice lua.LValue) {
+		choices = append(choices, choice.String())
+	})
+	if len(choices) > 0 {
+		res := components.UseMultiSelect(components.DefaultMultiSelectStyle(), &components.MultiSelectPayLoad{
+			Title:   title,
+			Choices: choices,
+		})
+		tbl := &lua.LTable{}
+		for _, r := range res {
+			tbl.Append(lua.LNumber(r))
+		}
+		lvm.Push(tbl)
+		return 1
+	}
+	return 0
+}
+
+func tuiBatchSpinner(lvm *lua.LState) int {
+	tasks := []components.BatchTask{}
+	lvm.CheckTable(1).ForEach(func(idx, tbl lua.LValue) {
+		tasks = append(tasks, components.BatchTask{
+			Name: tbl.(*lua.LTable).RawGetString("name").String(),
+			Callback: func() bool {
+				if err := LuaDoFunc(lvm, tbl.(*lua.LTable).RawGetString("callback").(*lua.LFunction)); err != nil {
+					return false
+				}
+				return true
+			},
+		})
+	})
+	components.UseBatchSpinner(components.DefaultBatchSpinnerStyle(), &components.BatchSpinnerPayLoad{
+		Task: tasks,
+	})
 	return 1
 }
 

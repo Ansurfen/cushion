@@ -30,11 +30,11 @@ func DefaultFancyListPayLoad() *FancyListPayLoad {
 
 type FancyListItem struct {
 	ChoiceTitle  string
-	ChoiceDetial string
+	ChoiceDetail string
 }
 
 func (i FancyListItem) Title() string       { return i.ChoiceTitle }
-func (i FancyListItem) Description() string { return i.ChoiceDetial }
+func (i FancyListItem) Description() string { return i.ChoiceDetail }
 func (i FancyListItem) FilterValue() string { return i.ChoiceTitle }
 
 type fancyList struct {

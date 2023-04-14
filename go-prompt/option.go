@@ -443,6 +443,16 @@ func OptionColor(field string, color string) Option {
 	}
 }
 
+func OptionColors(colors map[string]string) Option {
+	return func(p *Prompt) error {
+		r := utils.NewReflectObject(p.renderer)
+		for field, color := range colors {
+			r.Set(utils.FirstLower(field), color)
+		}
+		return nil
+	}
+}
+
 // OptionMaxSuggestion specify the max number of displayed suggestions.
 func OptionMaxSuggestion(x uint16) Option {
 	return func(p *Prompt) error {

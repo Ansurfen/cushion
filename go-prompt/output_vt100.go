@@ -34,6 +34,11 @@ func (w *VT100Writer) WriteStr(data string) {
 
 // WriteColorableRaw to write raw byte array with color
 func (w *VT100Writer) WriteColorableRaw(fg, bg string, bold bool, data []byte) {
+	if fg == "-1" && fg == bg {
+		w.SetColor(DefaultColor, DefaultColor, bold)
+		w.WriteRaw(data)
+		return
+	}
 	w.WriteRawStr(lipgloss.NewStyle().Foreground(lipgloss.Color(fg)).Background(lipgloss.Color(bg)).Bold(bold).Render(string(data)))
 }
 

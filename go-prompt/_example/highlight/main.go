@@ -38,43 +38,47 @@ func completer(in prompt.Document) []prompt.Suggest {
 }
 
 func main() {
-	in := prompt.Input(">>> ", completer,
-		prompt.OptionTitle("sql-prompt"),
-		prompt.OptionRegisterMode([]prompt.CompletionMode{
-			{Name: "语法模式", Attr: prompt.NONE},
-			{Name: "路由模式 按住Ctrl+Y切换模式", Attr: prompt.NODSCRIPTION},
-		}),
-		prompt.OptionHistory([]string{"SELECT * FROM users;"}),
-		prompt.OptionSuggestionTextColor(prompt.White),
-		prompt.OptionSuggestionBGColor(prompt.DarkGray),
-		prompt.OptionSelectedSuggestionBGColor(prompt.Blue),
-		prompt.OptionSelectedSuggestionTextColor(prompt.Cyan),
+	for {
+		in := prompt.Input(">>> ", completer,
+			prompt.OptionTitle("sql-prompt"),
+			prompt.OptionRegisterMode([]prompt.CompletionMode{
+				{Name: "语法模式", Attr: prompt.NONE},
+				{Name: "路由模式 按住Ctrl+Y切换模式", Attr: prompt.NODSCRIPTION},
+			}),
+			prompt.OptionHistory([]string{"SELECT * FROM users;"}),
+			prompt.OptionSuggestionTextColor(prompt.White),
+			prompt.OptionSuggestionBGColor(prompt.DarkGray),
+			prompt.OptionSelectedSuggestionBGColor(prompt.Blue),
+			prompt.OptionSelectedSuggestionTextColor(prompt.Cyan),
 
-		prompt.OptionDescriptionTextColor(prompt.White),
-		prompt.OptionDescriptionBGColor(prompt.Black),
-		prompt.OptionSelectedDescriptionBGColor(prompt.DarkGray),
+			prompt.OptionDescriptionTextColor(prompt.White),
+			prompt.OptionDescriptionBGColor(prompt.Black),
+			prompt.OptionSelectedDescriptionBGColor(prompt.DarkGray),
 
-		prompt.OptionScrollbarBGColor(prompt.LightGray),
-		prompt.OptionScrollbarThumbColor(prompt.Cyan),
-		prompt.OptionCommentSuggestionTextColor(prompt.White),
-		prompt.OptionCommentSuggestionBGColor(prompt.Green),
-		prompt.OptionCommentDescriptionBGColor(prompt.Green),
-		prompt.OptionColor("ModePrefixTextBGColor", "#ff7b52"),
-		prompt.OptionColor("ModeSuffixTextBGColor", "#ff7b52"),
-		// prompt.OptionCommentSuggestionBGLipglossColor("#ff7b52"),
-		// prompt.OptionCommentDescriptionBGLiglossColor("#8866e9"),
-		prompt.OptionHighlight([]prompt.HighlightRule{
-			{Rule: "select", Color: "99"},
-			{Rule: "alter", Color: "160"},
-			{Rule: "from", Color: "35"},
-			{Rule: "as", Color: "202"},
-			{Rule: "where", Color: "214"},
-			{Rule: "(", Color: "100"},
-			{Rule: ")", Color: "100"},
-		}, func(s string) string {
-			return strings.ToLower(s)
-		}))
-	fmt.Println("Your input: " + in)
+			prompt.OptionScrollbarBGColor(prompt.LightGray),
+			prompt.OptionScrollbarThumbColor(prompt.Cyan),
+			prompt.OptionCommentSuggestionTextColor(prompt.White),
+			prompt.OptionCommentSuggestionBGColor(prompt.Green),
+			prompt.OptionCommentDescriptionBGColor(prompt.Green),
+			prompt.OptionColor("ModePrefixTextBGColor", "#ff7b52"),
+			prompt.OptionColor("ModeSuffixTextBGColor", "#ff7b52"),
+			// prompt.OptionCommentSuggestionBGLipglossColor("#ff7b52"),
+			// prompt.OptionCommentDescriptionBGLiglossColor("#8866e9"),
+			prompt.OptionHighlight([]prompt.HighlightRule{
+				{Rule: "select", Color: "99"},
+				{Rule: "alter", Color: "160"},
+				{Rule: "from", Color: "35"},
+				{Rule: "as", Color: "202"},
+				{Rule: "where", Color: "214"},
+				{Rule: "(", Color: "100"},
+				{Rule: ")", Color: "100"},
+			}, func(s string) string {
+				return strings.ToLower(s)
+			}))
+		if in == "exit" {
+			break
+		}
+	}
 	for i := 0; i < 255; i++ {
 		fmt.Print(lipgloss.NewStyle().Background(lipgloss.Color(strconv.Itoa(i))).Render(" "))
 	}

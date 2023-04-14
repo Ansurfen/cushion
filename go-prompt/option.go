@@ -601,7 +601,7 @@ func New(executor Executor, completer Completer, opts ...Option) *Prompt {
 
 func color2lipglossColor(c Color) string {
 	if c <= 0 || c > 16 {
-		return "0"
+		return "-1"
 	}
 	return strconv.Itoa(int(c - 1))
 }

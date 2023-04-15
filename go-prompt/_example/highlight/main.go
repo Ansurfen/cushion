@@ -38,6 +38,7 @@ func completer(in prompt.Document) []prompt.Suggest {
 }
 
 func main() {
+	history := prompt.NewHistory()
 	for {
 		in := prompt.Input(">>> ", completer,
 			prompt.OptionTitle("sql-prompt"),
@@ -45,7 +46,8 @@ func main() {
 				{Name: "语法模式", Attr: prompt.NONE},
 				{Name: "路由模式 按住Ctrl+Y切换模式", Attr: prompt.NODSCRIPTION},
 			}),
-			prompt.OptionHistory([]string{"SELECT * FROM users;"}),
+			prompt.OptionHistoryInstance(history),
+			// prompt.OptionHistory([]string{"SELECT * FROM users;"}),
 			prompt.OptionSuggestionTextColor(prompt.White),
 			prompt.OptionSuggestionBGColor(prompt.DarkGray),
 			prompt.OptionSelectedSuggestionBGColor(prompt.Blue),

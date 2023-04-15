@@ -29,6 +29,7 @@ type multiSelect struct {
 	cursor   int
 	selected map[int]struct{}
 	payload  *MultiSelectPayLoad
+	quit     bool
 }
 
 func (m multiSelect) Init() tea.Cmd {
@@ -40,6 +41,7 @@ func (m multiSelect) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case KeyCtrlC, KeyEnter:
+			m.quit = true
 			return m, tea.Quit
 		case KeyUp, KeyK:
 			if m.cursor > 0 {
@@ -63,6 +65,9 @@ func (m multiSelect) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m multiSelect) View() string {
+	if m.quit {
+		return ""
+	}
 	s := m.payload.Title + "\n\n"
 	var SelectedItemStyle = FontColor(lipgloss.Color(THEME_DANGER))
 	var greenStyle = FontColor(lipgloss.Color(THEME_INFO))

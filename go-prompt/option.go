@@ -470,6 +470,13 @@ func OptionHistory(x []string) Option {
 	}
 }
 
+func OptionHistoryInstance(h *History) Option {
+	return func(p *Prompt) error {
+		p.history = h
+		return nil
+	}
+}
+
 // OptionSwitchKeyBindMode set a key bind mode.
 func OptionSwitchKeyBindMode(m KeyBindMode) Option {
 	return func(p *Prompt) error {

@@ -50,6 +50,7 @@ type textInput struct {
 	inputs     []textinput.Model
 	cursorMode cursor.Mode
 	style      *TextInputStyle
+	quit       bool
 }
 
 type TextInputFormat struct {
@@ -81,6 +82,7 @@ func (m *textInput) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case KeyTab, KeyShiftTab, KeyEnter, KeyUp, KeyDown:
 			s := msg.String()
 			if s == KeyEnter && m.focusIndex == len(m.inputs) {
+				m.quit = true
 				return m, tea.Quit
 			}
 			if s == KeyUp || s == KeyShiftTab {
@@ -121,6 +123,9 @@ func (m *textInput) updateInputs(msg tea.Msg) tea.Cmd {
 }
 
 func (m *textInput) View() string {
+	if m.quit {
+		return ""
+	}
 	var b strings.Builder
 	for i := range m.inputs {
 		b.WriteString(m.inputs[i].View())

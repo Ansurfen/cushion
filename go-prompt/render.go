@@ -49,6 +49,8 @@ type Render struct {
 	commentDescriptionBGColor    lipglossColor
 }
 
+const iconSize = 2
+
 // Setup to initialize console output.
 func (r *Render) Setup() {
 	if r.title != "" {
@@ -68,8 +70,7 @@ func (r *Render) getCurrentPrefix() string {
 
 func (r *Render) renderPrefix() {
 	// r.out.WriteColorableRawStr(r.prefixTextColor, r.prefixBGColor, false, r.getCurrentPrefix())
-	r.out.SetColor(DefaultColor, DefaultColor, false)
-	r.out.WriteStr(r.getCurrentPrefix())
+	r.out.WriteRawStr(r.getCurrentPrefix())
 	r.out.SetColor(DefaultColor, DefaultColor, false)
 }
 
@@ -105,7 +106,7 @@ func (r *Render) renderWindowTooSmall() {
 func (r *Render) renderMode(mode Suggest) {
 	r.out.CursorDown(1)
 	r.out.WriteColorableRawStr(r.modePrefixTextColor, r.modePrefixTextBGColor, false, mode.Text)
-	r.out.WriteColorableRawStr(r.modeSuffixTextColor, r.modeSuffixTextBGColor, false, mode.Description+" ")
+	r.out.WriteColorableRawStr(r.modeSuffixTextColor, r.modeSuffixTextBGColor, false, mode.Description+"   ")
 	r.out.SetColor(DefaultColor, DefaultColor, false)
 }
 
@@ -181,21 +182,25 @@ func (r *Render) renderCompletion(buf *Buffer, completions *CompletionManager) {
 	if completions.modes != nil {
 		r.renderMode(modeSuggest)
 		r.lineWrap(cursor + width)
-		r.backward(cursor+width, width)
+		r.backward(cursor+width+iconSize, width+iconSize)
 	}
 
 	selected := completions.selected - completions.verticalScroll
 	r.out.SetColor(White, Cyan, false)
+	icon := "  "
 	for i := 0; i < windowHeight; i++ {
 		r.out.CursorDown(1)
+		if len(formatted[i].Icon) == 3 {
+			icon = " " + formatted[i].Icon
+		}
 		if formatted[i].Comment {
-			r.out.WriteColorableRawStr(r.commentSuggestionTextColor, r.commentSuggestionBGColor, false, formatted[i].Text)
+			r.out.WriteColorableRawStr(r.commentSuggestionTextColor, r.commentSuggestionBGColor, false, icon+formatted[i].Text)
 			r.out.WriteColorableRawStr(r.commentDescriptionTextColor, r.commentDescriptionBGColor, false, formatted[i].Description)
 		} else {
 			if i == selected {
-				r.out.WriteColorableRawStr(r.selectedSuggestionTextColor, r.selectedSuggestionBGColor, true, formatted[i].Text)
+				r.out.WriteColorableRawStr(r.selectedSuggestionTextColor, r.selectedSuggestionBGColor, true, icon+formatted[i].Text)
 			} else {
-				r.out.WriteColorableRawStr(r.suggestionTextColor, r.suggestionBGColor, false, formatted[i].Text)
+				r.out.WriteColorableRawStr(r.suggestionTextColor, r.suggestionBGColor, false, icon+formatted[i].Text)
 			}
 
 			if i == selected {
@@ -211,9 +216,9 @@ func (r *Render) renderCompletion(buf *Buffer, completions *CompletionManager) {
 			r.out.WriteColorableRawStr(color2lipglossColor(DefaultColor), r.scrollbarBGColor, false, " ")
 		}
 		r.out.SetColor(DefaultColor, DefaultColor, false)
-
+		icon = "  "
 		r.lineWrap(cursor + width)
-		r.backward(cursor+width, width)
+		r.backward(cursor+width+iconSize, width+iconSize)
 	}
 
 	if x+width >= int(r.col) {
@@ -240,7 +245,7 @@ func (r *Render) Render(buffer *Buffer, completion *CompletionManager) {
 	line := buffer.Text()
 	prefix := r.getCurrentPrefix()
 	cursor := runewidth.StringWidth(prefix) + runewidth.StringWidth(line)
-
+	// fmt.Println(cursor)
 	// prepare area
 	_, y := r.toPos(cursor)
 

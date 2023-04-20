@@ -23,6 +23,7 @@ var (
 
 // Suggest is printed when completing.
 type Suggest struct {
+	Icon        string
 	Text        string
 	Description string
 	Comment     bool
@@ -222,11 +223,10 @@ func formatSuggestions(suggests []Suggest, max int, no_desc bool) (new []Suggest
 		right, rightWidth = formatTexts(right, 0, rightPrefix, rightSuffix)
 	} else {
 		right, rightWidth = formatTexts(right, max-leftWidth, rightPrefix, rightSuffix)
-
 	}
 
 	for i := 0; i < num; i++ {
-		new[i] = Suggest{Text: left[i], Description: right[i], Comment: suggests[i].Comment}
+		new[i] = Suggest{Text: left[i], Description: right[i], Comment: suggests[i].Comment, Icon: suggests[i].Icon}
 	}
 	return new, leftWidth + rightWidth
 }

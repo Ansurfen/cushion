@@ -38,12 +38,6 @@ type Prompt struct {
 	mode              int
 }
 
-const (
-	COMPLETER_REST = iota
-	COMPLETER_UPADTE
-	COMPLETER_LOADING
-)
-
 // Exec is the struct contains user input context.
 type Exec struct {
 	input string
@@ -189,7 +183,7 @@ func (p *Prompt) handleCompletionKeyBinding(key Key, completing bool) {
 			}
 			p.buf.InsertText(s.Text, false, true)
 		}
-		go p.completion.Reset()
+		p.completion.Reset()
 	}
 }
 
@@ -266,7 +260,7 @@ func (p *Prompt) Input() string {
 				if p.completion.modes != nil {
 					p.buf.Document().SetMode(p.mode)
 				}
-				go p.completion.Update(*p.buf.Document())
+				p.completion.Update(*p.buf.Document())
 				p.renderer.Render(p.buf, p.completion)
 			}
 		default:

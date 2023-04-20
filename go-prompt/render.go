@@ -245,7 +245,6 @@ func (r *Render) Render(buffer *Buffer, completion *CompletionManager) {
 	line := buffer.Text()
 	prefix := r.getCurrentPrefix()
 	cursor := runewidth.StringWidth(prefix) + runewidth.StringWidth(line)
-	// fmt.Println(cursor)
 	// prepare area
 	_, y := r.toPos(cursor)
 

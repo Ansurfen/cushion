@@ -335,7 +335,6 @@ func (c *AsyncCompletionManager) EventLoop() {
 		for {
 			if c.lock {
 				c.tmp = []Suggest{{Text: c.p.renderer.progress.Next(), Comment: true}}
-				c.p.renderer.renderCompletionLoading(c.p.buf, c.p.completion)
 				c.p.renderer.Render(c.p.buf, c.p.completion)
 			}
 			time.Sleep(100 * time.Millisecond)

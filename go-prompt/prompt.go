@@ -28,7 +28,7 @@ type Prompt struct {
 	renderer          *Render
 	executor          Executor
 	history           *History
-	completion        *CompletionManager
+	completion        Completion
 	keyBindings       []KeyBind
 	ASCIICodeBindings []ASCIICodeBind
 	keyBindMode       KeyBindMode
@@ -51,7 +51,7 @@ func (p *Prompt) Run() {
 	p.setUp()
 	defer p.tearDown()
 
-	if p.completion.showAtStart {
+	if p.completion.getShowAtStart() {
 		p.completion.Update(*p.buf.Document())
 	}
 
@@ -177,7 +177,7 @@ func (p *Prompt) handleCompletionKeyBinding(key Key, completing bool) {
 		p.completion.Previous()
 	default:
 		if s, ok := p.completion.GetSelectedSuggestion(); ok {
-			w := p.buf.Document().GetWordBeforeCursorUntilSeparator(p.completion.wordSeparator)
+			w := p.buf.Document().GetWordBeforeCursorUntilSeparator(p.completion.getWordSeparator())
 			if w != "" {
 				p.buf.DeleteBeforeCursor(len([]rune(w)))
 			}
@@ -236,7 +236,7 @@ func (p *Prompt) Input() string {
 	p.setUp()
 	defer p.tearDown()
 
-	if p.completion.showAtStart {
+	if p.completion.getShowAtStart() {
 		p.completion.Update(*p.buf.Document())
 	}
 
@@ -244,6 +244,8 @@ func (p *Prompt) Input() string {
 	bufCh := make(chan []byte, 128)
 	stopReadBufCh := make(chan struct{})
 	go p.readBuffer(bufCh, stopReadBufCh)
+
+	go p.completion.EventLoop()
 
 	for {
 		select {
@@ -257,10 +259,11 @@ func (p *Prompt) Input() string {
 				stopReadBufCh <- struct{}{}
 				return e.input
 			} else {
-				if p.completion.modes != nil {
+				if p.completion.getModes() != nil {
 					p.buf.Document().SetMode(p.mode)
 				}
 				p.completion.Update(*p.buf.Document())
+				// todo: it's might be required to delete for async
 				p.renderer.Render(p.buf, p.completion)
 			}
 		default:

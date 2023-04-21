@@ -54,7 +54,7 @@ func OptionInitialBufferText(x string) Option {
 // OptionCompletionWordSeparator to set word separators. Enable only ' ' if empty.
 func OptionCompletionWordSeparator(x string) Option {
 	return func(p *Prompt) error {
-		p.completion.wordSeparator = x
+		p.completion.setWordSeparator(x)
 		return nil
 	}
 }
@@ -456,7 +456,7 @@ func OptionColors(colors map[string]string) Option {
 // OptionMaxSuggestion specify the max number of displayed suggestions.
 func OptionMaxSuggestion(x uint16) Option {
 	return func(p *Prompt) error {
-		p.completion.max = x
+		p.completion.setMax(x)
 		return nil
 	}
 }
@@ -516,7 +516,7 @@ func OptionAddASCIICodeBind(b ...ASCIICodeBind) Option {
 // OptionShowCompletionAtStart to set completion window is open at start.
 func OptionShowCompletionAtStart() Option {
 	return func(p *Prompt) error {
-		p.completion.showAtStart = true
+		p.completion.setShowAtStart()
 		return nil
 	}
 }
@@ -540,7 +540,7 @@ func OptionSetExitCheckerOnInput(fn ExitChecker) Option {
 func OptionRegisterMode(modes []CompletionMode) Option {
 	return func(prompt *Prompt) error {
 		if len(modes) > 0 {
-			prompt.completion.modes = modes
+			prompt.completion.setModes(modes)
 			prompt.keyBindings = append(prompt.keyBindings, KeyBind{
 				Key: ControlY,
 				Fn: func(b *Buffer) {
@@ -550,6 +550,13 @@ func OptionRegisterMode(modes []CompletionMode) Option {
 				},
 			})
 		}
+		return nil
+	}
+}
+
+func OptionAsyncCompletionManager() Option {
+	return func(prompt *Prompt) error {
+		prompt.completion = UpgradeAsyncCompletionManager(prompt.completion.(*CompletionManager))
 		return nil
 	}
 }
@@ -590,6 +597,7 @@ func New(executor Executor, completer Completer, opts ...Option) *Prompt {
 			commentSuggestionBGColor:     color2lipglossColor(DefaultColor),
 			commentDescriptionTextColor:  color2lipglossColor(DefaultColor),
 			commentDescriptionBGColor:    color2lipglossColor(DefaultColor),
+			progress:                     NewProgress([]string{"|", "/", "-", "\\"}),
 		},
 		buf:         NewBuffer(),
 		executor:    executor,
@@ -597,12 +605,12 @@ func New(executor Executor, completer Completer, opts ...Option) *Prompt {
 		completion:  NewCompletionManager(completer, 6),
 		keyBindMode: EmacsKeyBind, // All the above assume that bash is running in the default Emacs setting
 	}
-
 	for _, opt := range opts {
 		if err := opt(pt); err != nil {
 			panic(err)
 		}
 	}
+	pt.completion.setPrompt(pt)
 	return pt
 }
 

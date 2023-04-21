@@ -2,6 +2,7 @@ package prompt
 
 import (
 	"strings"
+	"time"
 
 	"github.com/ansurfen/cushion/go-prompt/internal/debug"
 	runewidth "github.com/mattn/go-runewidth"
@@ -139,6 +140,61 @@ func (c *CompletionManager) update() {
 	}
 }
 
+func (c *CompletionManager) EventLoop() {
+}
+
+func (c *CompletionManager) getMax() uint16 {
+	return c.max
+}
+
+func (c *CompletionManager) getVerticalScroll() int {
+	return c.verticalScroll
+}
+
+func (c *CompletionManager) getTmp() []Suggest {
+	return c.tmp
+}
+
+func (c *CompletionManager) getShowAtStart() bool {
+	return c.showAtStart
+}
+
+func (c *CompletionManager) getSelected() int {
+	return c.selected
+}
+
+func (c *CompletionManager) getCompleter() Completer {
+	return c.completer
+}
+
+func (c *CompletionManager) getModes() []CompletionMode {
+	return c.modes
+}
+
+func (c *CompletionManager) getWordSeparator() string {
+	return c.wordSeparator
+}
+
+func (c *CompletionManager) setWordSeparator(x string) {
+	c.wordSeparator = x
+}
+
+func (c *CompletionManager) setMax(x uint16) {
+	c.max = x
+}
+
+func (c *CompletionManager) setShowAtStart() {
+	c.showAtStart = true
+}
+
+func (c *CompletionManager) setModes(modes []CompletionMode) {
+	c.modes = modes
+}
+
+func (c *CompletionManager) setPrompt(p *Prompt) {
+
+}
+
 func deleteBreakLineCharacters(s string) string {
 	s = strings.Replace(s, "\n", "", -1)
 	s = strings.Replace(s, "\r", "", -1)
@@ -241,3 +297,100 @@ func NewCompletionManager(completer Completer, max uint16) *CompletionManager {
 		verticalScroll: 0,
 	}
 }
+
+const (
+	ASYNC_COMPLETION_UPDATE = iota
+	ASYNC_COMPLETION_RESET
+)
+
+type AsyncCompletionManager struct {
+	*CompletionManager
+	eventCh chan byte
+	p       *Prompt
+	lock    bool
+}
+
+func UpgradeAsyncCompletionManager(completion *CompletionManager) *AsyncCompletionManager {
+	return &AsyncCompletionManager{
+		CompletionManager: completion,
+		lock:              false,
+		eventCh:           make(chan byte, 64),
+	}
+}
+
+func (c *AsyncCompletionManager) setPrompt(p *Prompt) {
+	c.p = p
+}
+
+func (c *AsyncCompletionManager) Reset() {
+	c.eventCh <- ASYNC_COMPLETION_RESET
+}
+
+func (c *AsyncCompletionManager) Update(in Document) {
+	c.eventCh <- ASYNC_COMPLETION_UPDATE
+}
+
+func (c *AsyncCompletionManager) EventLoop() {
+	go func() {
+		for {
+			if c.lock {
+				c.tmp = []Suggest{{Text: c.p.renderer.progress.Next(), Comment: true}}
+				c.p.renderer.renderCompletionLoading(c.p.buf, c.p.completion)
+				c.p.renderer.Render(c.p.buf, c.p.completion)
+			}
+			time.Sleep(100 * time.Millisecond)
+		}
+	}()
+	for {
+		select {
+		case e := <-c.eventCh:
+			switch e {
+			case ASYNC_COMPLETION_UPDATE:
+				if c.lock {
+					break
+				}
+				go func() {
+					c.lock = true
+					c.Update(*c.p.buf.Document())
+					c.p.renderer.Render(c.p.buf, c.p.completion)
+					c.lock = false
+				}()
+			case ASYNC_COMPLETION_RESET:
+				c.tmp = []Suggest{{Text: c.p.renderer.progress.Next(), Comment: true}}
+			}
+		default:
+
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+}
+
+type Completion interface {
+	Completing() bool
+	GetSelectedSuggestion() (Suggest, bool)
+	GetSuggestions() []Suggest
+	Next()
+	Previous()
+	Reset()
+	Update(Document)
+	EventLoop()
+	// export field
+	getSelected() int
+	getTmp() []Suggest
+	getMax() uint16
+	getCompleter() Completer
+	getModes() []CompletionMode
+	getVerticalScroll() int
+	getWordSeparator() string
+	getShowAtStart() bool
+	setWordSeparator(string)
+	setMax(uint16)
+	setShowAtStart()
+	setModes([]CompletionMode)
+	setPrompt(*Prompt)
+}
+
+var (
+	_ Completion = &CompletionManager{}
+	_ Completion = &AsyncCompletionManager{}
+)

@@ -38,6 +38,10 @@ func (re *ReflectObject) DumpFields() {
 	}
 }
 
+func (re *ReflectObject) Fields() map[string]reflect.Value {
+	return re.fields
+}
+
 func (re *ReflectObject) Set(field string, value any) error {
 	v := re.fields[field]
 	if !v.IsValid() {

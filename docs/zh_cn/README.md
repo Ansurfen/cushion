@@ -14,3 +14,20 @@ Cushion 是 OpenCmd、Ark、Hulo、Yock 的基础库
 * utils: 统一的动态库（dll, dylib, so）封装、系统及软件信息元数据表封装（plist, regedit）、环境变量...
 * runtime: 具备动态语言的能力基于gopher-lua封装
 * components: 基于bubbletea封装，开箱即用的组件库
+
+## 开始
+
+最开始，我们将利用命令获取库
+```cmd
+go get "github.com/ansurfen/cushion"
+```
+
+然后，导入本地的库进入项目
+```go
+package main
+
+import (
+    "github.com/ansurfen/cushion/utils"
+    "github.com/ansurfen/cushion/runtime" // 
+)
+```

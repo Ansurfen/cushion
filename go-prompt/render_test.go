@@ -60,7 +60,7 @@ func TestFormatCompletion(t *testing.T) {
 	}
 
 	for _, s := range scenarioTable {
-		ac, width := formatSuggestions(s.completions, s.maxWidth)
+		ac, width := formatSuggestions(s.completions, s.maxWidth, false)
 		if !reflect.DeepEqual(ac, s.expected) {
 			t.Errorf("Should be %#v, but got %#v", s.expected, ac)
 		}
@@ -78,22 +78,22 @@ func TestBreakLineCallback(t *testing.T) {
 			fd: syscall.Stdin, // "write" to stdin just so we don't mess with the output of the tests
 		},
 		livePrefixCallback:           func() (string, bool) { return "", false },
-		prefixTextColor:              Blue,
-		prefixBGColor:                DefaultColor,
-		inputTextColor:               DefaultColor,
-		inputBGColor:                 DefaultColor,
-		previewSuggestionTextColor:   Green,
-		previewSuggestionBGColor:     DefaultColor,
-		suggestionTextColor:          White,
-		suggestionBGColor:            Cyan,
-		selectedSuggestionTextColor:  Black,
-		selectedSuggestionBGColor:    Turquoise,
-		descriptionTextColor:         Black,
-		descriptionBGColor:           Turquoise,
-		selectedDescriptionTextColor: White,
-		selectedDescriptionBGColor:   Cyan,
-		scrollbarThumbColor:          DarkGray,
-		scrollbarBGColor:             Cyan,
+		prefixTextColor:              color2lipglossColor(Blue),
+		prefixBGColor:                color2lipglossColor(DefaultColor),
+		inputTextColor:               color2lipglossColor(DefaultColor),
+		inputBGColor:                 color2lipglossColor(DefaultColor),
+		previewSuggestionTextColor:   color2lipglossColor(Green),
+		previewSuggestionBGColor:     color2lipglossColor(DefaultColor),
+		suggestionTextColor:          color2lipglossColor(White),
+		suggestionBGColor:            color2lipglossColor(Cyan),
+		selectedSuggestionTextColor:  color2lipglossColor(Black),
+		selectedSuggestionBGColor:    color2lipglossColor(Turquoise),
+		descriptionTextColor:         color2lipglossColor(Black),
+		descriptionBGColor:           color2lipglossColor(Turquoise),
+		selectedDescriptionTextColor: color2lipglossColor(White),
+		selectedDescriptionBGColor:   color2lipglossColor(Cyan),
+		scrollbarThumbColor:          color2lipglossColor(DarkGray),
+		scrollbarBGColor:             color2lipglossColor(Cyan),
 		col:                          1,
 	}
 	b := NewBuffer()

@@ -15,7 +15,7 @@ var _ EnvVar = &PosixEnvVar{}
 
 type PosixEnvVar struct{}
 
-func NewPosixEnvVar() *PosixEnvVar {
+func NewEnvVar() *PosixEnvVar {
 	return &PosixEnvVar{}
 }
 

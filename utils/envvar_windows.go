@@ -19,7 +19,7 @@ type WinEnvVar struct {
 	mode bool
 }
 
-func NewWinEnvVar() *WinEnvVar {
+func NewEnvVar() *WinEnvVar {
 	return &WinEnvVar{
 		self: NewWinEnv().ReadSysEnv().ReadUserVar(),
 		mode: envVarUser,

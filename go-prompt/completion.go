@@ -248,7 +248,7 @@ func formatSuggetionsWithMode(suggests []Suggest, max int, mode Suggest) (new []
 	return formatSuggestions(suggests, max, false)
 }
 
-func formatSuggetionsWithModeWithouDesc(suggests []Suggest, max int, mode Suggest) (new []Suggest, width int) {
+func formatSuggetionsWithModeWithoutDesc(suggests []Suggest, max int, mode Suggest) (new []Suggest, width int) {
 	suggests = append([]Suggest{mode}, suggests...)
 	return formatSuggestions(suggests, max, true)
 }

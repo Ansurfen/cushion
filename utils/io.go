@@ -11,7 +11,6 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -135,20 +134,28 @@ func SafeBatchMkdirs(dirs []string) error {
 }
 
 func Exec(arg ...string) ([]byte, error) {
-	switch runtime.GOOS {
+	switch CurPlatform.OS {
 	case "windows":
-		out, err := exec.Command("cmd", append([]string{"/C"}, arg...)...).CombinedOutput()
-		if err != nil {
-			return out, err
+		switch CurPlatform.Ver {
+		case "10", "11":
+			out, err := exec.Command("powershell", arg...).CombinedOutput()
+			if err != nil {
+				return out, err
+			}
+			return out, nil
+		default:
+			out, err := exec.Command("cmd", append([]string{"/C"}, arg...)...).CombinedOutput()
+			if err != nil {
+				return out, err
+			}
+			return out, nil
 		}
-		return out, nil
-	case "linux":
+	case "linux", "darwin":
 		out, err := exec.Command("/bin/bash", append([]string{"/C"}, arg...)...).CombinedOutput()
 		if err != nil {
 			return out, err
 		}
 		return out, nil
-	case "darwin":
 	default:
 	}
 	return []byte(""), nil

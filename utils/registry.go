@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package utils
@@ -462,7 +463,7 @@ type RegistryPage struct {
 }
 
 // open key or create key if no exist
-func NewRegistryPage(root registry.Key, path string) *RegistryPage {
+func CreateRegistryPage(root registry.Key, path string) *RegistryPage {
 	path = strings.ReplaceAll(path, "/", "\\")
 	key, err := registry.OpenKey(root, path, registry.ALL_ACCESS)
 	if err != nil {
@@ -489,7 +490,7 @@ func NewRegistryPage(root registry.Key, path string) *RegistryPage {
 	}
 }
 
-func NewRegistryPageOnlyOpen(root registry.Key, path string) *RegistryPage {
+func OpenRegistryPage(root registry.Key, path string) *RegistryPage {
 	key, err := registry.OpenKey(root, path, registry.ALL_ACCESS)
 	if err != nil {
 		if err.Error() != registry.ErrNotExist.Error() {
@@ -504,6 +505,17 @@ func NewRegistryPageOnlyOpen(root registry.Key, path string) *RegistryPage {
 	}
 }
 
+func (page *RegistryPage) SafeSetValue(k string, v RegistryValue) {
+	rv := GetValue(page.key, k)
+	switch rv.Type() {
+	case registry.NONE:
+		page.SetValue(k, v)
+	case registry.EXPAND_SZ:
+		val := fmt.Sprintf("%s;%s", v.ToString(), rv.(ExpandSZValue).ToString())
+		page.SetValue(k, NewExpandSZValue(val))
+	}
+}
+
 func (page *RegistryPage) SetValue(k string, v RegistryValue) {
 	switch v.Type() {
 	case registry.BINARY:
@@ -512,6 +524,20 @@ func (page *RegistryPage) SetValue(k string, v RegistryValue) {
 		page.key.SetStringValue(k, v.ToString())
 	case registry.EXPAND_SZ:
 		page.key.SetExpandStringValue(k, v.ToString())
+	case registry.DWORD:
+		i, err := strconv.Atoi(v.ToString())
+		if err != nil {
+			panic(err)
+		}
+		page.key.SetDWordValue(k, uint32(i))
+	case registry.QWORD:
+		i, err := strconv.Atoi(v.ToString())
+		if err != nil {
+			panic(err)
+		}
+		page.key.SetQWordValue(k, uint64(i))
+	case registry.MULTI_SZ:
+		page.key.SetStringValue(k, v.ToString())
 	}
 }
 
@@ -528,9 +554,9 @@ func (page *RegistryPage) CreateSubKey(subpath string) *RegistryPage {
 		}
 	}
 	if !exist {
-		return NewRegistryPage(page.root, fmt.Sprintf("%s\\%s", page.path, subpath))
+		return CreateRegistryPage(page.root, fmt.Sprintf("%s\\%s", page.path, subpath))
 	}
-	return NewRegistryPageOnlyOpen(page.root, fmt.Sprintf("%s\\%s", page.path, subpath))
+	return OpenRegistryPage(page.root, fmt.Sprintf("%s\\%s", page.path, subpath))
 }
 
 func (page *RegistryPage) CreateSubKeys(subpaths string) *RegistryPage {
@@ -559,7 +585,7 @@ func (page *RegistryPage) GetSubKey(subpath string) *RegistryPage {
 	if !exist {
 		return nil
 	}
-	return NewRegistryPageOnlyOpen(page.root, fmt.Sprintf("%s\\%s", page.path, subpath))
+	return OpenRegistryPage(page.root, fmt.Sprintf("%s\\%s", page.path, subpath))
 }
 
 func (page *RegistryPage) GetSubKeys(subpaths string) *RegistryPage {
@@ -603,7 +629,7 @@ func (page *RegistryPage) walkBuilder(root registry.Key, path string, level int,
 			page.walkBuilder(root, fmt.Sprintf("%s\\%s", path, subKey), level+1, callback)
 		}
 	}
-	callback(NewRegistryPageOnlyOpen(page.root, path), path, level, false)
+	callback(OpenRegistryPage(page.root, path), path, level, false)
 }
 
 func (page *RegistryPage) DumpValue() {
@@ -647,9 +673,9 @@ func (page *RegistryPage) SafeRecurseDelete() {
 	})
 }
 
-func (page *RegistryPage) Backup() {
+func (page *RegistryPage) Backup() error {
 	if err := Mkdirs(page.path); err != nil {
-		panic(err)
+		return err
 	}
 	fp := NewRegistryValueFile(fmt.Sprintf("%s/this.ini", page.path))
 	for name, value := range page.dumpValue() {
@@ -657,6 +683,7 @@ func (page *RegistryPage) Backup() {
 		fp.SetValue(name, value.ToString())
 	}
 	fp.Write()
+	return nil
 }
 
 func rollbackRegistryPageBuilder(root registry.Key, dir string, num int) {
@@ -697,14 +724,14 @@ func rollbackRegistryPageBuilder(root registry.Key, dir string, num int) {
 						value = vv
 					default:
 					}
-					page := NewRegistryPage(root, strings.ReplaceAll(path.Dir(target), "/", "\\"))
+					page := CreateRegistryPage(root, strings.ReplaceAll(path.Dir(target), "/", "\\"))
 					page.SetValue(name, NewRegistryValue(valType, value))
 					defer page.Free()
 				default:
 				}
 			}
 			if !flag {
-				NewRegistryPage(root, strings.ReplaceAll(path.Dir(target), "/", "\\"))
+				CreateRegistryPage(root, strings.ReplaceAll(path.Dir(target), "/", "\\"))
 			}
 		}
 	}
@@ -746,15 +773,15 @@ func DeleteRegistryKeys(root string, keys []string) {
 	for _, key := range keys {
 		switch root {
 		case "ROOT":
-			NewRegistryPage(registry.CLASSES_ROOT, key).SafeRecurseDelete()
+			CreateRegistryPage(registry.CLASSES_ROOT, key).SafeRecurseDelete()
 		case "USER":
-			NewRegistryPage(registry.CURRENT_USER, key).SafeRecurseDelete()
+			CreateRegistryPage(registry.CURRENT_USER, key).SafeRecurseDelete()
 		case "LOCAL_MACHINE":
-			NewRegistryPage(registry.LOCAL_MACHINE, key).SafeRecurseDelete()
+			CreateRegistryPage(registry.LOCAL_MACHINE, key).SafeRecurseDelete()
 		case "USERS":
-			NewRegistryPage(registry.USERS, key).SafeRecurseDelete()
+			CreateRegistryPage(registry.USERS, key).SafeRecurseDelete()
 		case "CURRENT_CONFIG":
-			NewRegistryPage(registry.CURRENT_CONFIG, key).SafeRecurseDelete()
+			CreateRegistryPage(registry.CURRENT_CONFIG, key).SafeRecurseDelete()
 		default:
 		}
 	}

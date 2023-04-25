@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package utils
@@ -40,7 +41,7 @@ func TestEnvVarExport(t *testing.T) {
 }
 
 func TestRegistryPage(t *testing.T) {
-	page := NewRegistryPage(registry.LOCAL_MACHINE, "SOFTWARE\\a_this_is_a_demo")
+	page := CreateRegistryPage(registry.LOCAL_MACHINE, "SOFTWARE\\a_this_is_a_demo")
 	page.SetValue("demo", BinaryValue{
 		val: []byte("demo"),
 	})
@@ -69,7 +70,7 @@ func TestRegistryPage(t *testing.T) {
 
 func TestRegistryRollback(t *testing.T) {
 	RollbackRegistryPage(registry.LOCAL_MACHINE, "SOFTWARE")
-	page := NewRegistryPage(registry.LOCAL_MACHINE, "SOFTWARE\\a_this_is_a_demo")
+	page := CreateRegistryPage(registry.LOCAL_MACHINE, "SOFTWARE\\a_this_is_a_demo")
 	page.DumpValue()
 	defer page.Free()
 	page.Walk(func(cur *RegistryPage, path string, level int, end bool) bool {

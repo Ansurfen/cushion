@@ -86,5 +86,6 @@ require (
 	github.com/spf13/viper v1.15.0
 	github.com/vadv/gopher-lua-libs v0.4.1
 	github.com/yuin/gopher-lua v1.1.0
+	howett.net/plist v1.0.0
 	layeh.com/gopher-luar v1.0.10
 )

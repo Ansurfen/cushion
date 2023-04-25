@@ -209,32 +209,30 @@ func (env *WinEnv) dumpEnvVar(envVar map[string]RegistryValue) *WinEnv {
 }
 
 func (env *WinEnv) ExportUserVar(opt EnvVarExportOpt) *WinEnv {
-	conf := viper.New()
-	conf.SetConfigType("ini")
-	for name, value := range env.userVar {
-		conf.Set(fmt.Sprintf("%s.type", name), value.Type())
-		conf.Set(fmt.Sprintf("%s.value", name), value.ToString())
-	}
 	file := opt.File
 	if len(file) == 0 {
 		file = fmt.Sprintf("user_%s.ini", NowTimestampByString())
 	}
-	conf.WriteConfigAs(file)
+	conf := NewRegistryValueFile(file)
+	for name, value := range env.userVar {
+		conf.SetType(name, value.Type())
+		conf.SetValue(name, value.ToString())
+	}
+	conf.Write()
 	return env
 }
 
 func (env *WinEnv) ExportSysVar(opt EnvVarExportOpt) *WinEnv {
-	conf := viper.New()
-	conf.SetConfigType("ini")
-	for name, value := range env.sysVar {
-		conf.Set(fmt.Sprintf("%s.type", name), value.Type())
-		conf.Set(fmt.Sprintf("%s.value", name), value.ToString())
-	}
 	file := opt.File
 	if len(file) == 0 {
-		file = fmt.Sprintf("user_%s.ini", NowTimestampByString())
+		file = fmt.Sprintf("sys_%s.ini", NowTimestampByString())
 	}
-	conf.WriteConfigAs(file)
+	conf := NewRegistryValueFile(file)
+	for name, value := range env.sysVar {
+		conf.SetType(name, value.Type())
+		conf.SetValue(name, value.ToString())
+	}
+	conf.Write()
 	return env
 }
 
@@ -360,7 +358,7 @@ func (env *WinEnv) DeleteSysVar(opt EnvVarDeleteOpt) *WinEnv {
 	return env
 }
 
-func (env *WinEnv) LoadEnvVar(opt EnvVarLoadOpt) *WinEnv {
+func (env *WinEnv) LoadEnvVar(opt WinEnvVarLoadOpt) *WinEnv {
 	conf := viper.New()
 	conf.SetConfigFile(opt.File)
 	if err := conf.ReadInConfig(); err != nil {
@@ -417,7 +415,7 @@ type EnvVarSearchOpt struct {
 	MatchValue bool
 }
 
-type EnvVarLoadOpt struct {
+type WinEnvVarLoadOpt struct {
 	File string
 	Spec bool // ? false -> user, true -> sys
 }

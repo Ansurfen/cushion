@@ -34,7 +34,7 @@ func TestEnvVarExport(t *testing.T) {
 		}).ExportUserVar(EnvVarExportOpt{
 		File: "tmp.ini",
 	})
-	NewWinEnv().LoadEnvVar(EnvVarLoadOpt{
+	NewWinEnv().LoadEnvVar(WinEnvVarLoadOpt{
 		File: "tmp.ini",
 		Spec: envVarUser,
 	}).DumpUserVar()

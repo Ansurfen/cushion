@@ -42,9 +42,10 @@ const (
 )
 
 // Color represents color on terminal.
+// note: Color only support ANSI color
 type Color int
 
-// lipglossColor is a upgrade to Color, supporting ansi256 and rgb color.
+// lipglossColor is a upgrade to Color, supporting ANSI256 and RGB color.
 type lipglossColor = string
 
 const (

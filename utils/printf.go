@@ -10,6 +10,7 @@ type PrintfOpt struct {
 	MaxLen int
 }
 
+// Printf represent title and rows with tidy
 func Prinf(opt PrintfOpt, title []string, rows [][]string) {
 	if len(rows) <= 0 {
 		for _, t := range title {

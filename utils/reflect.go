@@ -32,16 +32,19 @@ func NewReflectObject(data any) *ReflectObject {
 	return re
 }
 
+// DumpFields print fields and values for current struct
 func (re *ReflectObject) DumpFields() {
 	for name, value := range re.fields {
 		fmt.Println(name, value)
 	}
 }
 
+// Fields return all fields for current type
 func (re *ReflectObject) Fields() map[string]reflect.Value {
 	return re.fields
 }
 
+// Set can ignore case to set field value
 func (re *ReflectObject) Set(field string, value any) error {
 	v := re.fields[field]
 	if !v.IsValid() {
@@ -66,6 +69,7 @@ func (re *ReflectObject) Set(field string, value any) error {
 	return nil
 }
 
+// Get return value of spcify field
 func (re *ReflectObject) Get(field string) reflect.Value {
 	v := re.fields[field]
 	if v.CanAddr() {
@@ -75,6 +79,7 @@ func (re *ReflectObject) Get(field string) reflect.Value {
 	return v
 }
 
+// Raw return raw data
 func (re *ReflectObject) Raw() any {
 	return re.raw
 }

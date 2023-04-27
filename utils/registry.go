@@ -22,6 +22,7 @@ const (
 ark exec %%* -n %s`
 )
 
+// WinEnv manage windows sys and user environment variable throught regedit
 type WinEnv struct {
 	sysVar  map[string]RegistryValue
 	userVar map[string]RegistryValue
@@ -36,6 +37,7 @@ func NewWinEnv() *WinEnv {
 	}
 }
 
+// GetModuleFileName return absolute path according to exe name
 func (env *WinEnv) GetModuleFileName(exe string) string {
 	path, err := Exec("where", exe)
 	if err != nil {
@@ -44,6 +46,7 @@ func (env *WinEnv) GetModuleFileName(exe string) string {
 	return string(path)
 }
 
+// GetExeEnvVar return enviroment variable which matchs with exe name
 func (env *WinEnv) GetExeEnvVar(exe string) (string, bool) {
 	if len(env.sysVar) == 0 {
 		env.ReadSysEnv()
@@ -72,6 +75,7 @@ func (env *WinEnv) GetExeEnvVar(exe string) (string, bool) {
 	return "", false
 }
 
+// ReadUserVar read user variable from regedit
 func (env *WinEnv) ReadUserVar() *WinEnv {
 	userVarKeys, err := registry.OpenKey(registry.CURRENT_USER, "Environment", registry.ALL_ACCESS)
 	if err != nil {
@@ -88,6 +92,7 @@ func (env *WinEnv) ReadUserVar() *WinEnv {
 	return env
 }
 
+// ReadUserVar read sys variable from regedit
 func (env *WinEnv) ReadSysEnv() *WinEnv {
 	sysVarKeys, err := registry.OpenKey(registry.LOCAL_MACHINE, `SYSTEM\ControlSet001\Control\Session Manager\Environment`, registry.ALL_ACCESS)
 	if err != nil {
@@ -112,6 +117,7 @@ func (env *WinEnv) ReadSysEnv() *WinEnv {
 	return env
 }
 
+// SafeSetUserEnv set user variable when key isn't exist
 func (env *WinEnv) SafeSetUserEnv(k string, v RegistryValue) *WinEnv {
 	if vv, ok := env.userVar[k]; ok {
 		if v.Type() != registry.EXPAND_SZ {
@@ -128,6 +134,7 @@ func (env *WinEnv) SafeSetUserEnv(k string, v RegistryValue) *WinEnv {
 	return env.SetUserEnv(k, v)
 }
 
+// SafeSetUserEnv set user variable
 func (env *WinEnv) SetUserEnv(k string, v RegistryValue) *WinEnv {
 	var err error
 	switch vv := v.(type) {
@@ -145,6 +152,7 @@ func (env *WinEnv) SetUserEnv(k string, v RegistryValue) *WinEnv {
 	return env
 }
 
+// SafeSetUserEnv set sys variable when key isn't exist
 func (env *WinEnv) SafeSetSysEnv(k string, v RegistryValue) *WinEnv {
 	if vv, ok := env.sysVar[k]; ok {
 		if v.Type() != registry.EXPAND_SZ {
@@ -161,6 +169,7 @@ func (env *WinEnv) SafeSetSysEnv(k string, v RegistryValue) *WinEnv {
 	return env.SetSysEnv(k, v)
 }
 
+// SafeSetUserEnv set sys variable
 func (env *WinEnv) SetSysEnv(k string, v RegistryValue) *WinEnv {
 	var err error
 	switch vv := v.(type) {
@@ -178,10 +187,12 @@ func (env *WinEnv) SetSysEnv(k string, v RegistryValue) *WinEnv {
 	return env
 }
 
+// DumpUserVar print user variable on console
 func (env *WinEnv) DumpUserVar() *WinEnv {
 	return env.dumpEnvVar(env.userVar)
 }
 
+// DumpSysVar print sys variable on console
 func (env *WinEnv) DumpSysVar() *WinEnv {
 	return env.dumpEnvVar(env.sysVar)
 }
@@ -208,6 +219,8 @@ func (env *WinEnv) dumpEnvVar(envVar map[string]RegistryValue) *WinEnv {
 	return env
 }
 
+// ExportUserVar export user varible to specify ini file.
+// If no file is specified, it randomly generates a file name based on time
 func (env *WinEnv) ExportUserVar(opt EnvVarExportOpt) *WinEnv {
 	file := opt.File
 	if len(file) == 0 {
@@ -222,6 +235,8 @@ func (env *WinEnv) ExportUserVar(opt EnvVarExportOpt) *WinEnv {
 	return env
 }
 
+// ExportSysVar export sys varible to specify ini file.
+// If no file is specified, it randomly generates a file name based on time
 func (env *WinEnv) ExportSysVar(opt EnvVarExportOpt) *WinEnv {
 	file := opt.File
 	if len(file) == 0 {
@@ -330,6 +345,8 @@ func (env *WinEnv) searchEnvVarDefault(opt EnvVarSearchOpt, envVar map[string]Re
 	return ret
 }
 
+// DeleteUserVar delete key to be specified.
+// If opt.Safe is true (safe is true in default), it'll backup kv to be deleted.
 func (env *WinEnv) DeleteUserVar(opt EnvVarDeleteOpt) *WinEnv {
 	fp := NewRegistryValueFile(fmt.Sprintf("%s.ini", NowTimestampByString()))
 	for _, rule := range opt.Rules {
@@ -344,6 +361,8 @@ func (env *WinEnv) DeleteUserVar(opt EnvVarDeleteOpt) *WinEnv {
 	return env
 }
 
+// DeleteSysVar delete key to be specified.
+// If opt.Safe is true (safe is true in default), it'll backup kv to be deleted.
 func (env *WinEnv) DeleteSysVar(opt EnvVarDeleteOpt) *WinEnv {
 	fp := NewRegistryValueFile(fmt.Sprintf("%s.ini", NowTimestampByString()))
 	for _, rule := range opt.Rules {
@@ -358,6 +377,7 @@ func (env *WinEnv) DeleteSysVar(opt EnvVarDeleteOpt) *WinEnv {
 	return env
 }
 
+// LoadEnvVar restore enviroment variable from specify file
 func (env *WinEnv) LoadEnvVar(opt WinEnvVarLoadOpt) *WinEnv {
 	conf := viper.New()
 	conf.SetConfigFile(opt.File)
@@ -460,7 +480,7 @@ type RegistryPage struct {
 	path string
 }
 
-// open key or create key if no exist
+// CreateRegistryPage open or create key
 func CreateRegistryPage(root registry.Key, path string) *RegistryPage {
 	path = strings.ReplaceAll(path, "/", "\\")
 	key, err := registry.OpenKey(root, path, registry.ALL_ACCESS)
@@ -488,6 +508,7 @@ func CreateRegistryPage(root registry.Key, path string) *RegistryPage {
 	}
 }
 
+// OpenRegistryPage open spcify key
 func OpenRegistryPage(root registry.Key, path string) *RegistryPage {
 	key, err := registry.OpenKey(root, path, registry.ALL_ACCESS)
 	if err != nil {
@@ -601,6 +622,7 @@ func (page *RegistryPage) GetSubKeys(subpaths string) *RegistryPage {
 	return curPage
 }
 
+// Walk recurse to scan path along with root, you can add callback to effect each path
 func (page *RegistryPage) Walk(callback func(cur *RegistryPage, path string, level int, end bool) bool) {
 	page.walkBuilder(page.root, page.path, 0, callback)
 }
@@ -630,6 +652,7 @@ func (page *RegistryPage) walkBuilder(root registry.Key, path string, level int,
 	callback(OpenRegistryPage(page.root, path), path, level, false)
 }
 
+// DumpValue print values on key
 func (page *RegistryPage) DumpValue() {
 	for name, v := range page.dumpValue() {
 		fmt.Println(name, v)
@@ -735,6 +758,7 @@ func rollbackRegistryPageBuilder(root registry.Key, dir string, num int) {
 	}
 }
 
+// RollbackRegistryPage recurse to restore memory struct of registry from specify dir
 func RollbackRegistryPage(root registry.Key, path string) {
 	rollbackRegistryPageBuilder(root, path, 0)
 }

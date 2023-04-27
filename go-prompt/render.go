@@ -339,14 +339,16 @@ func (r *Render) lineWrap(cursor int) {
 	}
 }
 
+// renderInput to render text to be input with highlight
 func (r *Render) renderInput(line string) {
 	for _, l := range strings.SplitAfter(line, " ") {
 		raw := l
 		if r.highlightCvt != nil {
 			l = r.highlightCvt(l)
 		}
-		if style, ok := r.highlightStyle[strings.TrimRight(l, " ")]; ok {
-			r.out.WriteRawStr(style.Render(strings.TrimRight(raw, " ")) + strings.Repeat(" ", len(l)-len(strings.TrimRight(l, " "))))
+		l = strings.TrimRight(l, " ")
+		if style, ok := r.highlightStyle[l]; ok {
+			r.out.WriteRawStr(style.Render(strings.TrimRight(raw, " ")) + strings.Repeat(" ", len(raw)-len(l)))
 		} else {
 			r.out.SetColor(DefaultColor, DefaultColor, false)
 			r.out.WriteRawStr(raw)

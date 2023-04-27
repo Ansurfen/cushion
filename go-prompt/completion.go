@@ -96,8 +96,8 @@ func (c *CompletionManager) Previous() {
 		c.verticalScroll--
 	}
 	c.selected--
-	for i := c.selected; i < len(c.tmp); i++ {
-		if i >= 0 && c.tmp[i].Comment {
+	for i := c.selected; i >= 0; i-- {
+		if c.tmp[i].Comment {
 			if c.verticalScroll == c.selected && c.selected > 0 {
 				c.verticalScroll--
 			}

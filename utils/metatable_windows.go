@@ -96,7 +96,7 @@ func (tbl *WinMetaTable) SetValue(v MetaValue) {
 	}
 }
 
-// SetValue set MetaTable's value when key isn't exist,
+// SafeSetValue set MetaTable's value when key isn't exist,
 // regedit(windows): MetaValue ✔ MetaMap ✔ MetaArr x (MetaArr not work);
 func (tbl *WinMetaTable) SafeSetValue(v MetaValue) {
 	switch vv := v.(type) {

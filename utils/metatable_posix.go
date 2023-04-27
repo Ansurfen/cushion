@@ -51,7 +51,7 @@ func (tbl *PosixMetaTable) GetValue(v string) MetaValue {
 }
 
 // SetValue set MetaTable's value,
-// plist(mac, posix): MetaValue ✔ MetaMap ✔ MetaArr ✔
+// plist(darwin, posix): MetaValue ✔ MetaMap ✔ MetaArr ✔
 func (tbl *PosixMetaTable) SetValue(v MetaValue) {
 	if tbl.parent != nil {
 		switch vv := tbl.parent.fp.v.(type) {
@@ -67,8 +67,8 @@ func (tbl *PosixMetaTable) SetValue(v MetaValue) {
 	}
 }
 
-// SetValue set MetaTable's value when key isn't exist,
-// plist(mac, posix): MetaValue ✔ MetaMap ✔ MetaArr ✔
+// SafeSetValue set MetaTable's value when key isn't exist,
+// plist(darwin, posix): MetaValue ✔ MetaMap ✔ MetaArr ✔
 func (tbl *PosixMetaTable) SafeSetValue(v MetaValue) {
 	switch vv := v.(type) {
 	case MetaMap:
@@ -101,7 +101,7 @@ func (tbl *PosixMetaTable) CreateSubTable(name string) MetaTable {
 
 // Write to persist MetaValue in disk.
 // note: The regedit (windows) is written when it is created,
-// and this method is only valid for plist (mac, posix).
+// and this method is only valid for plist (darwin, posix).
 // The regedit is just an empty method.
 func (tbl *PosixMetaTable) Write() error {
 	return tbl.fp.Write()

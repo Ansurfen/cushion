@@ -111,8 +111,8 @@ func main() {
 		in := prompt.Input("", completer,
 			prompt.OptionTitle("sql-prompt"),
 			prompt.OptionRegisterMode([]prompt.CompletionMode{
-				{Name: "语法模式", Attr: prompt.NONE},
-				{Name: "路由模式 按住Ctrl+Y切换模式", Attr: prompt.NODSCRIPTION},
+				{Name: "语法模式", Attr: prompt.Attr_NONE},
+				{Name: "路由模式 按住Ctrl+Y切换模式", Attr: prompt.Attr_NODSCRIPTION},
 			}),
 			prompt.OptionHistoryInstance(history),
 			// prompt.OptionHistory([]string{"SELECT * FROM users;"}),

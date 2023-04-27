@@ -26,7 +26,7 @@ func NewEnvVar() *WinEnvVar {
 	}
 }
 
-// windows: sys or user
+// SetPath set operate target, windows: sys or user, this is required in windows.
 func (env *WinEnvVar) SetPath(path string) error {
 	switch path {
 	case "sys":
@@ -39,6 +39,7 @@ func (env *WinEnvVar) SetPath(path string) error {
 	return nil
 }
 
+// set global enviroment variable
 func (env *WinEnvVar) Set(k string, v any) error {
 	var regVal RegistryValue
 	switch vv := v.(type) {
@@ -59,6 +60,7 @@ func (env *WinEnvVar) Set(k string, v any) error {
 	return nil
 }
 
+// set global enviroment variable when key isn't exist
 func (env *WinEnvVar) SafeSet(k string, v any) error {
 	var regVal RegistryValue
 	switch vv := v.(type) {
@@ -79,6 +81,7 @@ func (env *WinEnvVar) SafeSet(k string, v any) error {
 	return nil
 }
 
+// unset (delete) global enviroment variable
 func (env *WinEnvVar) Unset(k string) error {
 	opt := EnvVarDeleteOpt{
 		Rules: []string{k},
@@ -92,10 +95,12 @@ func (env *WinEnvVar) Unset(k string) error {
 	return nil
 }
 
+// set local enviroment variable
 func (env *WinEnvVar) SetL(k, v string) error {
 	return os.Setenv(k, v)
 }
 
+// set local enviroment variable when key isn't exist
 func (env *WinEnvVar) SafeSetL(k, v string) error {
 	exist := false
 	for _, e := range os.Environ() {
@@ -110,6 +115,7 @@ func (env *WinEnvVar) SafeSetL(k, v string) error {
 	return errors.New("var exist already")
 }
 
+// export current enviroment string into specify file
 func (env *WinEnvVar) Export(file string) error {
 	opt := EnvVarExportOpt{
 		File: file,
@@ -122,6 +128,7 @@ func (env *WinEnvVar) Export(file string) error {
 	return nil
 }
 
+// load exported env from disk
 func (env *WinEnvVar) Load(opt EnvVarLoadOpt) error {
 	env.self.LoadEnvVar(WinEnvVarLoadOpt{
 		File: opt.file,
@@ -130,6 +137,7 @@ func (env *WinEnvVar) Load(opt EnvVarLoadOpt) error {
 	return nil
 }
 
+// Print enviroment variable
 func (env *WinEnvVar) Print() {
 	if !env.mode {
 		env.self.DumpUserVar()

@@ -1,6 +1,6 @@
 # go-prompt
 
-English | 简体中文
+[English](../../go-prompt/README.md) | 简体中文
 
 这个库基于 [c-bata/go-prompt](github.com/c-bata/go-prompt) 改造而来。在保留原有接口的基础上，对他进行了一系列增强。
 
@@ -31,5 +31,5 @@ Masashi Shibata
 
 ## 协议
 
-这个软件被构建在MIT协议之下，详情请查看 [LICENSE](./LICENSE) 。
+这个软件被构建在MIT协议之下，详情请查看 [LICENSE](../../go-prompt/LICENSE) 。
 

@@ -1,25 +1,31 @@
 package utils
 
+// EnvVar is an interface to abstract different os enviroment variable
 type EnvVar interface {
-	// windows: sys or user
-	// linux: /etc/enviroment
+	// SetPath set operate target:
+	// windows: sys or user, it's required in windows.
+	// posix: /etc/enviroment, this only is empty method.
 	SetPath(string) error
 
-	// global env variable
+	// set global enviroment variable
 	Set(string, any) error
+	// set global enviroment variable when key isn't exist
 	SafeSet(string, any) error
 
+	// unset (delete) global enviroment variable
 	Unset(string) error
 
-	// local env variable
+	// set local enviroment variable
 	SetL(string, string) error
+	// set local enviroment variable when key isn't exist
 	SafeSetL(string, string) error
 
-	// export current env string
+	// export current enviroment string into specify file
 	Export(string) error
-	// load exported env from disk
+	// load enviroment string to be export from disk
 	Load(EnvVarLoadOpt) error
 
+	// Print current enviroment variable
 	Print()
 }
 

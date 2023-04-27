@@ -1,6 +1,6 @@
 # go-prompt
 
-English | 简体中文
+English | [简体中文](../docs/zh_cn/go-prompt.md)
 
 The library is an improvement on [c-beta/go-prompt](https://github.com/c-bata/go-prompt). On the basis of retaining the original api, a series of enhancements were introduced.
 

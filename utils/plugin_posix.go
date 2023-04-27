@@ -1,3 +1,4 @@
+//go:build !windows
 // +build !windows
 
 package utils
@@ -5,6 +6,11 @@ package utils
 import (
 	"errors"
 	"plugin"
+)
+
+var (
+	_ Plugin     = &PosixPlugin{}
+	_ PluginFunc = &PosixPluginFunc{}
 )
 
 type PosixPlugin struct {
@@ -18,6 +24,8 @@ func NewPlugin(path string) (Plugin, error) {
 	}, err
 }
 
+// Func return PluginFunc which is an abstract function to be exported dynamic library
+// according to funcName. You can use PluginFunc to call function from dynamic library.
 func (pp *PosixPlugin) Func(name string) (PluginFunc, error) {
 	sym, err := pp.Lookup(name)
 	if err != nil {
@@ -32,6 +40,7 @@ type PosixPluginFunc struct {
 	plugin.Symbol
 }
 
+// Call return excuted result from dynamic library
 func (ppf *PosixPluginFunc) Call(params ...uintptr) (uintptr, error) {
 	switch f := ppf.Symbol.(type) {
 	case func(...uintptr) uintptr:

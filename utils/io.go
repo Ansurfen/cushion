@@ -16,6 +16,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// NewConf unmarshal file which located in disk to memory according to name, type, dir
 func NewConf(name, _type, dir string) *viper.Viper {
 	conf := viper.New()
 	conf.SetConfigName(name)
@@ -27,6 +28,7 @@ func NewConf(name, _type, dir string) *viper.Viper {
 	return conf
 }
 
+// NewConf unmarshal file which located in disk to memory according to path
 func NewConfFromPath(path string) *viper.Viper {
 	conf := viper.New()
 	conf.SetConfigFile(path)
@@ -36,14 +38,15 @@ func NewConfFromPath(path string) *viper.Viper {
 	return conf
 }
 
-func Unzip(zipPath, dstDir string) error {
-	reader, err := zip.OpenReader(zipPath)
+// Unzip unzip zip of source to specify path
+func Unzip(src, dst string) error {
+	reader, err := zip.OpenReader(src)
 	if err != nil {
 		return err
 	}
 	defer reader.Close()
 	for _, file := range reader.File {
-		if err := unzipFile(file, dstDir); err != nil {
+		if err := unzipFile(file, dst); err != nil {
 			return err
 		}
 	}
@@ -75,12 +78,13 @@ func unzipFile(file *zip.File, dstDir string) error {
 	return err
 }
 
-func MoveFile(sourcePath, destPath string) error {
-	inputFile, err := os.Open(sourcePath)
+// MoveFile move file from src to dst, like mv or move command
+func MoveFile(src, dst string) error {
+	inputFile, err := os.Open(src)
 	if err != nil {
 		return fmt.Errorf("couldn't open source file: %s", err)
 	}
-	outputFile, err := os.Create(destPath)
+	outputFile, err := os.Create(dst)
 	if err != nil {
 		inputFile.Close()
 		return fmt.Errorf("couldn't open dest file: %s", err)
@@ -94,6 +98,7 @@ func MoveFile(sourcePath, destPath string) error {
 	return nil
 }
 
+// FetchFile fetch file from remote source to local destination
 func FetchFile(src, dst string) (int64, error) {
 	file, err := os.OpenFile(dst, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
 	if err != nil {
@@ -109,10 +114,12 @@ func FetchFile(src, dst string) (int64, error) {
 	return n, err
 }
 
+// Mkdirs recurse to create path
 func Mkdirs(path string) error {
 	return os.MkdirAll(path, 0777)
 }
 
+// SafeMkdirs recurse to create path when path isn't exist
 func SafeMkdirs(path string) error {
 	if ok, err := PathIsExist(path); err != nil {
 		return err
@@ -124,6 +131,7 @@ func SafeMkdirs(path string) error {
 	return nil
 }
 
+// SafeBatchMkdirs recurse to create dirs when path isn't exist
 func SafeBatchMkdirs(dirs []string) error {
 	for _, dir := range dirs {
 		if err := SafeMkdirs(dir); err != nil {
@@ -133,6 +141,9 @@ func SafeBatchMkdirs(dirs []string) error {
 	return nil
 }
 
+// Exec automatically fit in os enviroment to execute command.
+// windows 10+ -> powershell, others -> cmd;
+// linux, darwin -> /bin/bash
 func Exec(arg ...string) ([]byte, error) {
 	switch CurPlatform.OS {
 	case "windows":
@@ -161,10 +172,12 @@ func Exec(arg ...string) ([]byte, error) {
 	return []byte(""), nil
 }
 
+// ExecStr automatically split string to string arrary, then call Exec to execute
 func ExecStr(args string) ([]byte, error) {
 	return Exec(strings.Fields(args)...)
 }
 
+// WriteFile write data or create file to write data according to file
 func WriteFile(file string, data []byte) error {
 	fp, err := os.Create(file)
 	if err != nil {
@@ -175,6 +188,7 @@ func WriteFile(file string, data []byte) error {
 	return nil
 }
 
+// WriteFile write data or create file to write data according to file when file isn't exist
 func SafeWriteFile(file string, data []byte) error {
 	if ok, err := PathIsExist(file); err != nil {
 		return err
@@ -186,6 +200,7 @@ func SafeWriteFile(file string, data []byte) error {
 	return nil
 }
 
+// ReadStraemFromFile return total data from specify file
 func ReadStraemFromFile(file string) ([]byte, error) {
 	fp, err := os.Open(file)
 	if err != nil {
@@ -199,6 +214,7 @@ func ReadStraemFromFile(file string) ([]byte, error) {
 	return raw, nil
 }
 
+// ReadStraemFromFile return data to be filter from specify file
 func ReadLineFromFile(file string, filter func(string) string) ([]byte, error) {
 	fp, err := os.Open(file)
 	if err != nil {
@@ -216,6 +232,7 @@ func ReadLineFromFile(file string, filter func(string) string) ([]byte, error) {
 	return ret, nil
 }
 
+// ReadStraemFromFile return data to be filter from string
 func ReadLineFromString(str string, filter func(string) string) ([]byte, error) {
 	scanner := bufio.NewScanner(strings.NewReader(str))
 	scanner.Split(bufio.ScanLines)
@@ -229,6 +246,7 @@ func ReadLineFromString(str string, filter func(string) string) ([]byte, error) 
 	return ret, nil
 }
 
+// PathIsExist judge whether path exist. If exist, return true.
 func PathIsExist(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
@@ -240,6 +258,7 @@ func PathIsExist(path string) (bool, error) {
 	return false, err
 }
 
+// Filename returns the last element name of fullpath.
 func Filename(fullpath string) string {
 	filename := path.Base(fullpath)
 	ext := path.Ext(filename)

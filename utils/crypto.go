@@ -10,10 +10,12 @@ import (
 	"fmt"
 )
 
+// MD5 return the MD5 checksum of the data
 func MD5(str string) string {
 	return fmt.Sprintf("%x", md5.Sum([]byte(str)))
 }
 
+// SHA256 return the SHA256 checksum of the data
 func SHA256(str string) string {
 	return fmt.Sprintf("%x", sha256.Sum256([]byte(str)))
 }

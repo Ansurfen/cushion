@@ -10,11 +10,14 @@ import (
 	"golang.org/x/sys/windows/registry"
 )
 
+var _ MetaTable = &WinMetaTable{}
+
 type WinMetaTable struct {
 	page *RegistryPage
 	sub  []*RegistryPage
 }
 
+// CreateMetaTable to create or open MetaTable
 func CreateMetaTable(path string) (MetaTable, error) {
 	tbl := &WinMetaTable{
 		sub: make([]*RegistryPage, 0),
@@ -37,6 +40,7 @@ func CreateMetaTable(path string) (MetaTable, error) {
 	return tbl, nil
 }
 
+// CreateMetaTable to open MetaTable
 func OpenMetaTable(path string) (MetaTable, error) {
 	tbl := &WinMetaTable{
 		sub: make([]*RegistryPage, 0),
@@ -59,10 +63,13 @@ func OpenMetaTable(path string) (MetaTable, error) {
 	return tbl, nil
 }
 
+// GetValue return MetaValue according to key
 func (tbl *WinMetaTable) GetValue(v string) MetaValue {
 	return GetValue(tbl.page.key, v)
 }
 
+// SetValue set MetaTable's value,
+// regedit(windows): MetaValue ✔ MetaMap ✔ MetaArr x (MetaArr not work);
 func (tbl *WinMetaTable) SetValue(v MetaValue) {
 	switch vv := v.(type) {
 	case MetaMap:
@@ -89,6 +96,8 @@ func (tbl *WinMetaTable) SetValue(v MetaValue) {
 	}
 }
 
+// SetValue set MetaTable's value when key isn't exist,
+// regedit(windows): MetaValue ✔ MetaMap ✔ MetaArr x (MetaArr not work);
 func (tbl *WinMetaTable) SafeSetValue(v MetaValue) {
 	switch vv := v.(type) {
 	case MetaMap:
@@ -115,6 +124,7 @@ func (tbl *WinMetaTable) SafeSetValue(v MetaValue) {
 	}
 }
 
+// CreateSubTable create sub key and written file depond on its feture.
 func (tbl *WinMetaTable) CreateSubTable(name string) MetaTable {
 	child := tbl.page.CreateSubKey(name)
 	tbl.sub = append(tbl.sub, child)
@@ -123,14 +133,20 @@ func (tbl *WinMetaTable) CreateSubTable(name string) MetaTable {
 	}
 }
 
+// Write to persist MetaValue in disk.
+// note: The regedit (windows) is written when it is created,
+// and this method is only valid for plist (mac, posix).
+// The regedit is just an empty method.
 func (tbl *WinMetaTable) Write() error {
 	return nil
 }
 
+// Backup save a copy which could restore MetaValue
 func (tbl *WinMetaTable) Backup() error {
 	return tbl.page.Backup()
 }
 
+// Close to free MetaTable memory
 func (tbl *WinMetaTable) Close() {
 	for _, child := range tbl.sub {
 		child.Free()

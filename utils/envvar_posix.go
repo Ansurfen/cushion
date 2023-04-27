@@ -19,9 +19,10 @@ func NewEnvVar() *PosixEnvVar {
 	return &PosixEnvVar{}
 }
 
-// linux: /etc/enviroment
+// SetPath set operate target: posix: /etc/enviroment, this only is empty method.
 func (env *PosixEnvVar) SetPath(path string) error { return nil }
 
+// set global enviroment variable
 func (env *PosixEnvVar) Set(k string, v any) error {
 	if _, err := Exec("export", fmt.Sprintf("%s=%s", k, v)); err != nil {
 		return err
@@ -29,6 +30,7 @@ func (env *PosixEnvVar) Set(k string, v any) error {
 	return nil
 }
 
+// set global enviroment variable when key isn't exist
 func (env *PosixEnvVar) SafeSet(k string, v any) error {
 	vv, err := Exec("echo", "$"+k)
 	if err != nil {
@@ -42,10 +44,12 @@ func (env *PosixEnvVar) SafeSet(k string, v any) error {
 	return nil
 }
 
+// set local enviroment variable
 func (env *PosixEnvVar) SetL(k, v string) error {
 	return os.Setenv(k, v)
 }
 
+// set local enviroment variable when key isn't exist
 func (env *PosixEnvVar) SafeSetL(k, v string) error {
 	exist := false
 	for _, e := range os.Environ() {
@@ -60,6 +64,7 @@ func (env *PosixEnvVar) SafeSetL(k, v string) error {
 	return errors.New("var exist already")
 }
 
+// unset (delete) global enviroment variable
 func (env *PosixEnvVar) Unset(k string) error {
 	if _, err := Exec("unset", k); err != nil {
 		return err
@@ -67,6 +72,7 @@ func (env *PosixEnvVar) Unset(k string) error {
 	return nil
 }
 
+// export current enviroment string into specify file
 func (env *PosixEnvVar) Export(file string) error {
 	dict := make(map[string]string)
 	for _, e := range os.Environ() {
@@ -81,6 +87,7 @@ func (env *PosixEnvVar) Export(file string) error {
 	return WriteFile(file, raw)
 }
 
+// load exported env from disk
 func (env *PosixEnvVar) Load(opt EnvVarLoadOpt) error {
 	raw, err := ReadStraemFromFile(opt.file)
 	if err != nil {
@@ -102,6 +109,7 @@ func (env *PosixEnvVar) Load(opt EnvVarLoadOpt) error {
 	return nil
 }
 
+// Print enviroment variable
 func (env *PosixEnvVar) Print() {
 	for _, e := range os.Environ() {
 		if k, v, ok := strings.Cut(e, "="); ok {

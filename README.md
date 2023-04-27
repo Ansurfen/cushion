@@ -6,7 +6,7 @@
 
 English | [简体中文](./docs/zh_cn/README.md)
 
-Cushion is a basic library for OpenCmd and ark and yock and hulo...
+Cushion is a basic library for OpenCmd, Ark, Yock and Hulo...
 
 ## Features
 

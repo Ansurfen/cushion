@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/ansurfen/cushion/utils"
+	"github.com/charmbracelet/lipgloss"
 )
 
 // Option is the type to replace default parameters.
@@ -323,6 +324,7 @@ func OptionScrollbarBGLipglossColor(x lipglossColor) Option {
 	}
 }
 
+// OptionModePrefixTextColor to change text color in mode detail.
 func OptionModePrefixTextColor(x Color) Option {
 	return func(p *Prompt) error {
 		p.renderer.modePrefixTextColor = color2lipglossColor(x)
@@ -330,6 +332,7 @@ func OptionModePrefixTextColor(x Color) Option {
 	}
 }
 
+// OptionModePrefixTextLipglossColor to change text color in mode detail.
 func OptionModePrefixTextLipglossColor(x lipglossColor) Option {
 	return func(p *Prompt) error {
 		p.renderer.modePrefixTextColor = x
@@ -337,6 +340,7 @@ func OptionModePrefixTextLipglossColor(x lipglossColor) Option {
 	}
 }
 
+// OptionModePrefixTextBGColor to change background color in mode detail.
 func OptionModePrefixTextBGColor(x Color) Option {
 	return func(p *Prompt) error {
 		p.renderer.modePrefixTextBGColor = color2lipglossColor(x)
@@ -344,6 +348,7 @@ func OptionModePrefixTextBGColor(x Color) Option {
 	}
 }
 
+// OptionModePrefixTextBGLipglossColor to change text color in mode detail.
 func OptionModePrefixTextBGLipglossColor(x lipglossColor) Option {
 	return func(p *Prompt) error {
 		p.renderer.modePrefixTextBGColor = x
@@ -351,6 +356,7 @@ func OptionModePrefixTextBGLipglossColor(x lipglossColor) Option {
 	}
 }
 
+// OptionModeSuffixTextColor to change text color in mode detail.
 func OptionModeSuffixTextColor(x Color) Option {
 	return func(p *Prompt) error {
 		p.renderer.modeSuffixTextColor = color2lipglossColor(x)
@@ -358,6 +364,7 @@ func OptionModeSuffixTextColor(x Color) Option {
 	}
 }
 
+// OptionModeSuffixTextLipglossColor to change text color in mode detail.
 func OptionModeSuffixTextLipglossColor(x lipglossColor) Option {
 	return func(p *Prompt) error {
 		p.renderer.modeSuffixTextColor = x
@@ -365,6 +372,7 @@ func OptionModeSuffixTextLipglossColor(x lipglossColor) Option {
 	}
 }
 
+// OptionModeSuffixBGColor to change background color in mode detail.
 func OptionModeSuffixBGColor(x Color) Option {
 	return func(p *Prompt) error {
 		p.renderer.modeSuffixTextBGColor = color2lipglossColor(x)
@@ -372,6 +380,7 @@ func OptionModeSuffixBGColor(x Color) Option {
 	}
 }
 
+// OptionModeSuffixBGLipglossColor to change background color in mode detail.
 func OptionModeSuffixBGLipglossColor(x lipglossColor) Option {
 	return func(p *Prompt) error {
 		p.renderer.modeSuffixTextBGColor = x
@@ -379,6 +388,7 @@ func OptionModeSuffixBGLipglossColor(x lipglossColor) Option {
 	}
 }
 
+// OptionCommentSuggestionTextColor change comment text color in drop down suggestions.
 func OptionCommentSuggestionTextColor(x Color) Option {
 	return func(p *Prompt) error {
 		p.renderer.commentSuggestionTextColor = color2lipglossColor(x)
@@ -386,6 +396,7 @@ func OptionCommentSuggestionTextColor(x Color) Option {
 	}
 }
 
+// OptionCommentSuggestionTextLipglossColor change comment text color in drop down suggestions.
 func OptionCommentSuggestionTextLipglossColor(x lipglossColor) Option {
 	return func(p *Prompt) error {
 		p.renderer.commentSuggestionTextColor = x
@@ -393,6 +404,7 @@ func OptionCommentSuggestionTextLipglossColor(x lipglossColor) Option {
 	}
 }
 
+// OptionCommentSuggestionBGColor change comment background color in drop down suggestions.
 func OptionCommentSuggestionBGColor(x Color) Option {
 	return func(p *Prompt) error {
 		p.renderer.commentSuggestionBGColor = color2lipglossColor(x)
@@ -400,6 +412,7 @@ func OptionCommentSuggestionBGColor(x Color) Option {
 	}
 }
 
+// OptionCommentSuggestionBGLipglossColor change comment background color in drop down suggestions.
 func OptionCommentSuggestionBGLipglossColor(x lipglossColor) Option {
 	return func(p *Prompt) error {
 		p.renderer.commentSuggestionBGColor = x
@@ -407,6 +420,7 @@ func OptionCommentSuggestionBGLipglossColor(x lipglossColor) Option {
 	}
 }
 
+// OptionCommentDescriptionTextColor change text color of comment description text in drop down suggestions.
 func OptionCommentDescriptionTextColor(x Color) Option {
 	return func(p *Prompt) error {
 		p.renderer.commentDescriptionTextColor = color2lipglossColor(x)
@@ -414,6 +428,7 @@ func OptionCommentDescriptionTextColor(x Color) Option {
 	}
 }
 
+// OptionCommentDescriptionTextLipglossColor change text color of comment description text in drop down suggestions.
 func OptionCommentDescriptionTextLipglossColor(x lipglossColor) Option {
 	return func(p *Prompt) error {
 		p.renderer.commentDescriptionTextColor = x
@@ -421,6 +436,7 @@ func OptionCommentDescriptionTextLipglossColor(x lipglossColor) Option {
 	}
 }
 
+// OptionCommentDescriptionBGColor change text color of comment background text in drop down suggestions.
 func OptionCommentDescriptionBGColor(x Color) Option {
 	return func(p *Prompt) error {
 		p.renderer.commentDescriptionBGColor = color2lipglossColor(x)
@@ -428,6 +444,7 @@ func OptionCommentDescriptionBGColor(x Color) Option {
 	}
 }
 
+// OptionCommentDescriptionBGLiglossColor change text color of comment background text in drop down suggestions.
 func OptionCommentDescriptionBGLiglossColor(x lipglossColor) Option {
 	return func(p *Prompt) error {
 		p.renderer.commentDescriptionBGColor = x
@@ -435,6 +452,7 @@ func OptionCommentDescriptionBGLiglossColor(x lipglossColor) Option {
 	}
 }
 
+// OptionColor set color of specify field throught reflect
 func OptionColor(field string, color string) Option {
 	return func(p *Prompt) error {
 		r := utils.NewReflectObject(p.renderer)
@@ -443,6 +461,7 @@ func OptionColor(field string, color string) Option {
 	}
 }
 
+// OptionColor set color of specify fields throught reflect, map[field]color
 func OptionColors(colors map[string]string) Option {
 	return func(p *Prompt) error {
 		r := utils.NewReflectObject(p.renderer)
@@ -470,6 +489,7 @@ func OptionHistory(x []string) Option {
 	}
 }
 
+// OptionHistory to set history expressed by History pointer.
 func OptionHistoryInstance(h *History) Option {
 	return func(p *Prompt) error {
 		p.history = h
@@ -537,6 +557,19 @@ func OptionSetExitCheckerOnInput(fn ExitChecker) Option {
 	}
 }
 
+// OptionHighlight set highlight rule to render text to be input
+func OptionHighlight(rules []HighlightRule, cvt func(s string) string) Option {
+	return func(prompt *Prompt) error {
+		for _, rule := range rules {
+			prompt.renderer.highlightStyle[rule.Rule] = lipgloss.NewStyle().Foreground(lipgloss.Color(rule.Color))
+		}
+		prompt.renderer.highlightCvt = cvt
+		return nil
+	}
+}
+
+// OptionRegisterMode register completion mode to implement namespace effect
+// You can use ctrl+Y to switch mode in default.
 func OptionRegisterMode(modes []CompletionMode) Option {
 	return func(prompt *Prompt) error {
 		if len(modes) > 0 {
@@ -554,6 +587,7 @@ func OptionRegisterMode(modes []CompletionMode) Option {
 	}
 }
 
+// OptionAsyncCompletionManager to upgrade CompletionManager getting asynchronous suggests
 func OptionAsyncCompletionManager() Option {
 	return func(prompt *Prompt) error {
 		prompt.completion = UpgradeAsyncCompletionManager(prompt.completion.(*CompletionManager))
@@ -614,6 +648,7 @@ func New(executor Executor, completer Completer, opts ...Option) *Prompt {
 	return pt
 }
 
+// color2lipglossColor convert Color to lipglossColor type
 func color2lipglossColor(c Color) string {
 	if c <= 0 || c > 16 {
 		return "-1"

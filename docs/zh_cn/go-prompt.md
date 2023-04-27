@@ -15,3 +15,21 @@ ANSI、ANSI256、RGB均支持
 ### 模式切换
 
 ### 异步提示
+
+## 链接
+
+* [Change Log](./CHANGELOG.md)
+* [GoDoc](http://godoc.org/github.com/c-bata/go-prompt)
+* [gocover.io](https://gocover.io/github.com/c-bata/go-prompt)
+
+## 原作者
+
+Masashi Shibata
+
+* Twitter: [@c\_bata\_](https://twitter.com/c_bata_/)
+* Github: [@c-bata](https://github.com/c-bata/)
+
+## 协议
+
+这个软件被构建在MIT协议之下，详情请查看 [LICENSE](./LICENSE) 。
+

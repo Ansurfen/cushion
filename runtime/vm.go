@@ -5,6 +5,7 @@ import (
 
 	"github.com/ansurfen/cushion/utils"
 	"github.com/vadv/gopher-lua-libs/plugin"
+	luar "layeh.com/gopher-luar"
 
 	lua "github.com/yuin/gopher-lua"
 )
@@ -12,6 +13,7 @@ import (
 type CushionVM interface {
 	Mount() CushionVM
 	Call(string)
+	CallByParam(string, []any) []any
 	Eval(string) error
 	EvalFile(string) error
 }
@@ -44,6 +46,23 @@ func (vm *LuaVM) Call(fun string) {
 	}); err != nil {
 		panic(err)
 	}
+}
+
+func (vm *LuaVM) CallByParam(fn string, args []any) []any {
+	arg := []lua.LValue{}
+	for _, a := range args {
+		arg = append(arg, luar.New(vm.state, a))
+	}
+	vm.state.CallByParam(lua.P{
+		Fn:      vm.state.GetGlobal(fn),
+		NRet:    0,
+		Protect: true,
+	}, arg...)
+	ret := []any{}
+	for i := 1; i <= vm.state.GetTop(); i++ {
+		ret = append(ret, vm.state.CheckAny(i))
+	}
+	return ret
 }
 
 func (vm *LuaVM) MAT() *LuaMAT {

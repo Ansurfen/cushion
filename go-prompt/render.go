@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/ansurfen/cushion/go-prompt/internal/debug"
+	"github.com/charmbracelet/lipgloss"
 	runewidth "github.com/mattn/go-runewidth"
 )
 
@@ -131,7 +132,7 @@ func (r *Render) renderCompletion(buf *Buffer, completions Completion) {
 		if len(desc) == 0 {
 			desc = "Press Ctrl + Y to switch mode"
 		}
-		if mode.Attr == NODSCRIPTION {
+		if mode.Attr == Attr_NODSCRIPTION {
 			formatted, width = formatSuggetionsWithModeWithoutDesc(
 				suggestions,
 				int(r.col)-runewidth.StringWidth(prefix)-1, // -1 means a width of scrollbar
@@ -363,4 +364,12 @@ func clamp(high, low, x float64) float64 {
 	default:
 		return x
 	}
+}
+
+// HighlightStyles will render text to be input
+type HighlightStyles map[string]lipgloss.Style
+
+type HighlightRule struct {
+	Rule  string
+	Color string // ANSI color range 0-255
 }

@@ -14,6 +14,17 @@ const (
 	leftSuffix    = " "
 	rightPrefix   = " "
 	rightSuffix   = " "
+
+	// CompletionMode attribute:
+
+	// it's default value, which remain all field of suggest
+	Attr_NONE = iota
+	// Description in suggest will be not printed when completing
+	Attr_NODSCRIPTION
+	// Icon in suggest will be not printed when completing
+	Attr_NOICON
+	// only represent text in suggest
+	Attr_OnlyText
 )
 
 var (
@@ -43,11 +54,7 @@ type CompletionManager struct {
 	showAtStart    bool
 }
 
-const (
-	NONE = iota
-	NODSCRIPTION
-)
-
+// CompletionMode manage suggest list represent and mode detail
 type CompletionMode struct {
 	Name        string
 	Description string
@@ -140,8 +147,9 @@ func (c *CompletionManager) update() {
 	}
 }
 
-func (c *CompletionManager) EventLoop() {
-}
+// EventLoop is used to asynchronous load words of candidate.
+// It is not implemented for the synchrous struct.
+func (c *CompletionManager) EventLoop() {}
 
 func (c *CompletionManager) getMax() uint16 {
 	return c.max
@@ -303,6 +311,7 @@ const (
 	ASYNC_COMPLETION_RESET
 )
 
+// AsyncCompleterManager asynchronous manage which suggest is now selected.
 type AsyncCompletionManager struct {
 	*CompletionManager
 	eventCh chan byte
@@ -310,6 +319,7 @@ type AsyncCompletionManager struct {
 	lock    bool
 }
 
+// UpgradeAsyncCompletionManager to upgrade CompletionManager getting asynchronous suggests
 func UpgradeAsyncCompletionManager(completion *CompletionManager) *AsyncCompletionManager {
 	return &AsyncCompletionManager{
 		CompletionManager: completion,
@@ -322,16 +332,19 @@ func (c *AsyncCompletionManager) setPrompt(p *Prompt) {
 	c.p = p
 }
 
+// Reset to select nothing through writting signal into event chan
 func (c *AsyncCompletionManager) Reset() {
 	c.eventCh <- ASYNC_COMPLETION_RESET
 }
 
+// Update to update the suggestions through writting signal into event chan
 func (c *AsyncCompletionManager) Update(in Document) {
 	c.eventCh <- ASYNC_COMPLETION_UPDATE
 }
 
+// EventLoop is used to asynchronous load words of candidate.
 func (c *AsyncCompletionManager) EventLoop() {
-	go func() {
+	go func() { // asynchronous render suggest list
 		for {
 			if c.lock {
 				c.tmp = []Suggest{{Text: c.p.renderer.progress.Next(), Comment: true}}
@@ -340,13 +353,13 @@ func (c *AsyncCompletionManager) EventLoop() {
 			time.Sleep(100 * time.Millisecond)
 		}
 	}()
-	for {
+	for { // asynchronous handle event
 		select {
 		case e := <-c.eventCh:
 			switch e {
 			case ASYNC_COMPLETION_UPDATE:
-				if c.lock {
-					break
+				if c.lock { // simulate mutex
+					break // It'll downward execute when last goroutine complete
 				}
 				go func() {
 					c.lock = true
@@ -364,16 +377,27 @@ func (c *AsyncCompletionManager) EventLoop() {
 	}
 }
 
+// Completion is an interface to abstract CompletionManager.
 type Completion interface {
+	// Completing returns whether the CompletionManager selects something one.
 	Completing() bool
+	// GetSelectedSuggestion returns the selected item.
 	GetSelectedSuggestion() (Suggest, bool)
+	// GetSuggestions returns the list of suggestion.
 	GetSuggestions() []Suggest
+	// Next to select the next suggestion item.
 	Next()
+	// Previous to select the previous suggestion item.
 	Previous()
+	// Reset to select nothing.
 	Reset()
+	// Update to update the suggestions.
 	Update(Document)
+	// EventLoop is used to asynchronous load words of candidate.
+	// It is not implemented for synchronous struct.
 	EventLoop()
-	// export field
+
+	// export field from struct
 	getSelected() int
 	getTmp() []Suggest
 	getMax() uint16

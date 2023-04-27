@@ -44,6 +44,7 @@ const (
 // Color represents color on terminal.
 type Color int
 
+// lipglossColor is a upgrade to Color, supporting ansi256 and rgb color.
 type lipglossColor = string
 
 const (

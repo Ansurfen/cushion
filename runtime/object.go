@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// LuaObject is an interface to abstract object of lua type
 type LuaObject interface {
 	Ident() string
 	Value() string

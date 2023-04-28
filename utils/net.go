@@ -1,7 +1,11 @@
 package utils
 
-import "net"
+import (
+	"net"
+	"net/url"
+)
 
+// RandomPort return an available port with random.
 func RandomPort() (int, error) {
 	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
 	if err != nil {
@@ -13,4 +17,16 @@ func RandomPort() (int, error) {
 	}
 	defer l.Close()
 	return l.Addr().(*net.TCPAddr).Port, nil
+}
+
+// IsURL determine whether urlStr is a URL
+func IsURL(urlStr string) bool {
+	u, err := url.Parse(urlStr)
+	if err != nil {
+		return false
+	} else if u.Scheme == "" || u.Host == "" {
+		return false
+	} else {
+		return true
+	}
 }

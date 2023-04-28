@@ -449,6 +449,7 @@ const (
 	envVarSys  = true
 )
 
+// RegistryWalk recurse to scan path along with root, you can add callback to effect each path
 func RegistryWalk(root registry.Key, path string, level int, callback func(path string, level int, end bool) bool) {
 	key, err := registry.OpenKey(root, path, registry.ALL_ACCESS)
 	if err != nil {
@@ -474,6 +475,7 @@ func RegistryWalk(root registry.Key, path string, level int, callback func(path 
 	callback(path, level, true)
 }
 
+// RegistryPage manage key of specify path
 type RegistryPage struct {
 	key  registry.Key
 	root registry.Key
@@ -707,6 +709,11 @@ func (page *RegistryPage) Backup() error {
 	return nil
 }
 
+// RollbackRegistryPage recurse to restore memory struct of registry from specify dir
+func RollbackRegistryPage(root registry.Key, path string) {
+	rollbackRegistryPageBuilder(root, path, 0)
+}
+
 func rollbackRegistryPageBuilder(root registry.Key, dir string, num int) {
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
@@ -758,11 +765,6 @@ func rollbackRegistryPageBuilder(root registry.Key, dir string, num int) {
 	}
 }
 
-// RollbackRegistryPage recurse to restore memory struct of registry from specify dir
-func RollbackRegistryPage(root registry.Key, path string) {
-	rollbackRegistryPageBuilder(root, path, 0)
-}
-
 type RegistryValueFile struct {
 	conf *viper.Viper
 	// regVals map[string]struct {
@@ -791,6 +793,8 @@ func (fp *RegistryValueFile) Write() {
 	fp.conf.WriteConfigAs(fp.file)
 }
 
+// DeleteRegistryKeys to delete specify keys
+// It's safe recurse, which meant that all opearator will be stored.
 func DeleteRegistryKeys(root string, keys []string) {
 	for _, key := range keys {
 		switch root {
@@ -809,6 +813,7 @@ func DeleteRegistryKeys(root string, keys []string) {
 	}
 }
 
+// NewRegistryValue create a RegistryValue according to valType and value
 func NewRegistryValue(valType uint32, value string) RegistryValue {
 	switch valType {
 	case registry.SZ:
@@ -939,6 +944,8 @@ func (msz MultiSZValue) ToString() string {
 	return msz.val
 }
 
+// GetValue returns RegistryValue of k according to name
+// If not exist, it'll return NoneValue.
 func GetValue(k registry.Key, name string) RegistryValue {
 	_, valtype, _ := k.GetValue(name, nil)
 	switch valtype {

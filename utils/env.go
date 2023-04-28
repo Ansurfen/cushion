@@ -16,6 +16,7 @@ const (
 	ConfFile  = "conf.yaml"
 )
 
+// GetEnv returns global BaseEnv pointer
 func GetEnv() *BaseEnv {
 	return env
 }
@@ -34,6 +35,7 @@ type EnvOpt[T any] struct {
 	BlankConf string
 }
 
+// NewEnv to init BaseEnv and return Payload pointer which will be initialized from specify configure file in opt.
 func NewEnv[T any](opt EnvOpt[T]) *T {
 	env = NewBaseEnv()
 	env.workdir = filepath.ToSlash(path.Join(env.workdir, opt.Workdir))
@@ -78,6 +80,7 @@ func (env *BaseEnv) Workdir() string {
 	return env.workdir
 }
 
+// initWorkspace batch to create directory when BaseEnv initializes.
 func (env *BaseEnv) initWorkspace(dirs []string) error {
 	workdir := env.workdir
 	if err := SafeMkdirs(workdir); err != nil {
@@ -92,6 +95,7 @@ func (env *BaseEnv) initWorkspace(dirs []string) error {
 	return nil
 }
 
+// Dump reprensent env on console
 func (env *BaseEnv) Dump() {
 	fmt.Println("workdir: ", env.workdir)
 }
@@ -116,11 +120,13 @@ func (env *BaseEnv) ReadWithBind(path string, payload any) {
 	}
 }
 
+// Commit push key to configure file. It'll be write in disk throught Write.
 func (env *BaseEnv) Commit(key string, value any) *BaseEnv {
 	env.conf.Set(key, value)
 	return env
 }
 
+// Write to persist configure file in disk
 func (env *BaseEnv) Write() {
 	if err := env.conf.WriteConfig(); err != nil {
 		panic(err)

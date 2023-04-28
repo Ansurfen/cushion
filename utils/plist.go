@@ -11,14 +11,19 @@ import (
 	"howett.net/plist"
 )
 
+// PlistFile manage plist, which serves for PosixMetaTable
 type PlistFile struct {
 	file string
 	fp   *os.File
 	v    any
 }
 
+// CreatePlistFile create specify plist when plist isn't exist
 func CreatePlistFile(file string) (*PlistFile, error) {
 	fp, err := os.Create(file)
+	if err != nil {
+		return nil, err
+	}
 	pf := &PlistFile{
 		fp:   fp,
 		file: file,
@@ -29,8 +34,12 @@ func CreatePlistFile(file string) (*PlistFile, error) {
 	return pf, err
 }
 
+// OpenPlistFile open specify plist
 func OpenPlistFile(file string) (*PlistFile, error) {
 	fp, err := os.Open(file)
+	if err != nil {
+		return nil, err
+	}
 	pf := &PlistFile{
 		fp:   fp,
 		file: file,
@@ -49,6 +58,7 @@ func (pf *PlistFile) Write() error {
 	return plist.NewEncoder(pf.fp).Encode(pf.v)
 }
 
+// GetValue returns CFValue according to key
 func (pf *PlistFile) GetValue(key string) CFValue {
 	switch vv := pf.v.(type) {
 	case cfDictionary:
@@ -61,6 +71,7 @@ func (pf *PlistFile) GetValue(key string) CFValue {
 	return any2CFValue(pf.v)
 }
 
+// GetBaseValue returns CFValue. If not exist in plist, it'll return CFNone.
 func (pf *PlistFile) GetBaseValue() CFValue {
 	switch vv := pf.v.(type) {
 	case cfString, cfNumber, cfBool, cfData, cfUID, cfReal:
@@ -69,6 +80,7 @@ func (pf *PlistFile) GetBaseValue() CFValue {
 	return CFNone{}
 }
 
+// GetDict returns CFDictionary. If not exist in plist, it'll return a empty CFDictionary.
 func (pf *PlistFile) GetDict() CFDictionary {
 	switch v := pf.v.(type) {
 	case cfDictionary:
@@ -77,6 +89,7 @@ func (pf *PlistFile) GetDict() CFDictionary {
 	return CFDictionary{}
 }
 
+// GetDict returns CFArray. If not exist in plist, it'll return a empty CFArray.
 func (pf *PlistFile) GetArr() CFArray {
 	switch v := pf.GetValue("").(type) {
 	case CFArray:
@@ -85,6 +98,7 @@ func (pf *PlistFile) GetArr() CFArray {
 	return CFArray{}
 }
 
+// GetArrByField return CFArray according to field
 func (pf *PlistFile) GetArrByField(field string) CFArray {
 	fields := strings.Split(field, ".")
 	if len(fields) == 0 {
@@ -132,10 +146,12 @@ func any2CFValue(v any) CFValue {
 	return CFNone{}
 }
 
+// Set set root element of plist
 func (pf *PlistFile) Set(value any) {
 	pf.v = value
 }
 
+// SetByField set element in sprcify field, which support recurse and meant that you can set a.b.c field.
 func (pf *PlistFile) SetByField(field string, value CFValue) error {
 	fields := strings.Split(field, ".")
 	if len(fields) == 0 {
@@ -160,6 +176,8 @@ func (pf *PlistFile) SetByField(field string, value CFValue) error {
 	return nil
 }
 
+// SetByIdx set element in specify position if position is available.
+// For map, index will be convert string as key to set.
 func (pf *PlistFile) SetByIdx(idx int, value any) error {
 	if pf.Len() <= idx {
 		return errors.New("out of range")
@@ -182,6 +200,9 @@ func (pf *PlistFile) Append(value any) error {
 	return nil
 }
 
+// Len return plist length.
+// Length of array or map depend on elements amount.
+// For other type that include string, date, number and so on, it ever returns 1.
 func (pf *PlistFile) Len() int {
 	switch v := pf.v.(type) {
 	case cfString, cfNumber, cfBool, cfData, cfUID, cfReal:

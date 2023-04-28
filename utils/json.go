@@ -5,6 +5,7 @@ import (
 	"strconv"
 )
 
+// JsonValue is an interface to abstract object of json type.
 type JsonValue interface {
 	Value() string
 }
@@ -113,6 +114,7 @@ func (obj *JsonObject) Value() string {
 	return fmt.Sprintf(`{%s}`, res)
 }
 
+// JsonStr return json string according to JsonValue.
 func JsonStr(v JsonValue) string {
 	return v.Value()
 }

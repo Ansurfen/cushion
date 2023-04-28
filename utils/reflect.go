@@ -7,6 +7,7 @@ import (
 	"unsafe"
 )
 
+// ReflectObject is an assembly on reflect.Value and relfect.Type.
 type ReflectObject struct {
 	raw    any
 	rt     reflect.Type
@@ -84,6 +85,7 @@ func (re *ReflectObject) Raw() any {
 	return re.raw
 }
 
+// ReflectDict is a type dictionary and manage all type by map.
 type ReflectDict struct {
 	types map[string]TypeMeta
 }
@@ -99,6 +101,7 @@ func NewReflectDict() *ReflectDict {
 	}
 }
 
+// Load to register type into ReflectDict
 func (dict *ReflectDict) Load(datas ...any) {
 	for _, data := range datas {
 		v := reflect.ValueOf(&data).Elem()
@@ -106,6 +109,7 @@ func (dict *ReflectDict) Load(datas ...any) {
 	}
 }
 
+// New create a variable according to type name to be specified
 func (dict *ReflectDict) New(name string, value any) any {
 	if meta, ok := dict.types[name]; ok {
 		rv := reflect.ValueOf(value)

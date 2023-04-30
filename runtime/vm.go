@@ -25,14 +25,26 @@ type VirtualMachine interface {
 	Eval(string) error
 	// EvalFile to execute file of script
 	EvalFile(string) error
-	// SetGlobal to set global virable
-	SetGlobal(Handles)
-	// SafeSetGlobal to set global virable when it isn't exist
-	SafeSetGlobal(Handles)
+	// EvalFunc to execute function
+	EvalFunc(lua.LValue, []lua.LValue) ([]any, error)
+	// FastEvalFunc to execute function and not return value
+	FastEvalFunc(lua.LValue, []lua.LValue) error
+	// SetGlobalFn to set global function
+	SetGlobalFn(Handles)
+	// SafeSetGlobalFn to set global function when it isn't exist
+	SafeSetGlobalFn(Handles)
+	// GetGlobalVar returns global variable
+	GetGlobalVar(string) lua.LValue
+	// SetGlobalVar to set global variable
+	SetGlobalVar(string, lua.LValue)
+	// SafeSetGlobalVar to set global variable when variable isn't exist
+	SafeSetGlobalVar(string, lua.LValue)
 	// RegisterModule to register modules
 	RegisterModule(Handles)
 	// UnregisterModule to unregister specify module
 	UnregisterModule(string)
+	// LoadModule to immediately load module to be specified
+	LoadModule(string, lua.LGFunction)
 	// Interp returns interpreter
 	Interp() *LuaInterp
 }
@@ -121,10 +133,15 @@ func (vm *LuaVM) UnregisterModule(mid string) {
 	vm.mat.Unmount(mid)
 }
 
+// LoadModule to immediately load module to be specified
+func (vm *LuaVM) LoadModule(name string, loader lua.LGFunction) {
+	vm.state.PreloadModule(name, loader)
+}
+
 // Default to build vm with standard
 func (vm *LuaVM) Default() VirtualMachine {
 	vm.mountCushion()
-	vm.SetGlobal(LuaFuncs{
+	vm.SetGlobalFn(LuaFuncs{
 		"LoadSDK": globalLoadSDK,
 		"Import":  globalImport(vm),
 	})
@@ -154,20 +171,25 @@ func (vm *LuaVM) mountLibs() {
 	})
 }
 
-// SetGlobal to set global virable
-func (vm *LuaVM) SetGlobal(loaders LuaFuncs) {
+// SetGlobalFn to set global function
+func (vm *LuaVM) SetGlobalFn(loaders LuaFuncs) {
 	for name, loader := range loaders {
 		vm.state.SetGlobal(name, vm.state.NewFunction(loader))
 	}
 }
 
-// SafeSetGlobal to set global virable when it isn't exist
-func (vm *LuaVM) SafeSetGlobal(loaders LuaFuncs) {
+// SafeSetGlobalFn to set global function when it isn't exist
+func (vm *LuaVM) SafeSetGlobalFn(loaders LuaFuncs) {
 	for name, loader := range loaders {
 		if value := vm.state.GetGlobal(name); value.String() == "nil" {
 			vm.state.SetGlobal(name, vm.state.NewFunction(loader))
 		}
 	}
+}
+
+// Eval to execute string of script
+func (vm *LuaVM) Eval(script string) error {
+	return vm.state.DoString(script)
 }
 
 // EvalFile to execute file of script
@@ -178,9 +200,42 @@ func (vm *LuaVM) EvalFile(fullpath string) error {
 	return nil
 }
 
-// Eval to execute string of script
-func (vm *LuaVM) Eval(script string) error {
-	return vm.state.DoString(script)
+// EvalFunc to execute function
+func (vm *LuaVM) EvalFunc(fn lua.LValue, args []lua.LValue) ([]any, error) {
+	ret := []any{}
+	if err := vm.state.CallByParam(lua.P{
+		Fn:      fn,
+		Protect: true,
+	}, args...); err != nil {
+		return ret, err
+	}
+	for i := 1; i <= vm.state.GetTop(); i++ {
+		ret = append(ret, vm.state.CheckAny(i))
+	}
+	return ret, nil
+}
+
+func (vm *LuaVM) FastEvalFunc(fn lua.LValue, args []lua.LValue) error {
+	return vm.state.CallByParam(lua.P{
+		Fn:      fn,
+		Protect: true,
+	}, args...)
+}
+
+func (vm *LuaVM) GetGlobalVar(name string) lua.LValue {
+	return vm.state.GetGlobal(name)
+}
+
+// SetGlobalVar to set global variable
+func (vm *LuaVM) SetGlobalVar(name string, v lua.LValue) {
+	vm.state.SetGlobal(name, v)
+}
+
+// SafeSetGlobalVar to set global variable when variable isn't exist
+func (vm *LuaVM) SafeSetGlobalVar(name string, v lua.LValue) {
+	if vm.state.GetGlobal(name).Type().String() == "nil" {
+		vm.state.SetGlobal(name, v)
+	}
 }
 
 func LuaModuleLoader(lvm *lua.LState, funcs LuaFuncs) int {

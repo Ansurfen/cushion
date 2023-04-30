@@ -4,18 +4,20 @@ import lua "github.com/yuin/gopher-lua"
 
 // MAT is abbreviation for module allocate table,
 // which is used to load module into virtual machine with lazy.
-type CushionMAT interface {
+type MAT interface {
 	// Mount to add MCB to MAT
-	Mount()
+	Mount(LuaFuncs) MAT
 	// Unmount to remove MCB from MAT
-	Unmount()
+	Unmount(string) MAT
 	// Collect to converge specify mcb according to cluster.
-	Collect(string, []string) CushionMAT
+	Collect(string, []string) MAT
+	// MCB returns mcb list
+	MCB(string) map[string]*luaMCB
 }
 
 // MCB is abbreviation for module control block,
 // which store and control module meta.
-type CushionMCB interface {
+type MCB interface {
 	// Mark to set module used state
 	Mark()
 	// Used returns whether mcb is used
@@ -23,8 +25,8 @@ type CushionMCB interface {
 }
 
 var (
-	// _ CushionMAT = &LuaMAT{}
-	_ CushionMCB = &luaMCB{}
+	_ MAT = &LuaMAT{}
+	_ MCB = &luaMCB{}
 )
 
 // MAT is abbreviation for module allocate table,
@@ -34,13 +36,14 @@ type LuaMAT struct {
 	cluster map[string][]string
 }
 
-func NewLuaMAT() *LuaMAT {
+func NewLuaMAT() MAT {
 	return &LuaMAT{
 		mcbs:    make(map[string]*luaMCB),
 		cluster: make(map[string][]string),
 	}
 }
 
+// MCB returns specify mcb according to mid
 func (mat *LuaMAT) MCB(mid string) map[string]*luaMCB {
 	ret := make(map[string]*luaMCB)
 	if mids, ok := mat.cluster[mid]; ok {
@@ -59,7 +62,7 @@ func (mat *LuaMAT) MCB(mid string) map[string]*luaMCB {
 }
 
 // Mount to add MCB to MAT
-func (mat *LuaMAT) Mount(funcs LuaFuncs) *LuaMAT {
+func (mat *LuaMAT) Mount(funcs LuaFuncs) MAT {
 	for mid, mcbFunc := range funcs {
 		_, ok := mat.mcbs[mid]
 		if ok {
@@ -75,13 +78,14 @@ func (mat *LuaMAT) Mount(funcs LuaFuncs) *LuaMAT {
 }
 
 // Unmount to remove MCB from MAT
-func (mat *LuaMAT) Unmount(mid string) {
+func (mat *LuaMAT) Unmount(mid string) MAT {
 	delete(mat.mcbs, mid)
 	delete(mat.cluster, mid)
+	return mat
 }
 
 // Collect to converge specify mcb according to cluster.
-func (mat *LuaMAT) Collect(cluster string, mids []string) *LuaMAT {
+func (mat *LuaMAT) Collect(cluster string, mids []string) MAT {
 	for _, mid := range mids {
 		if _, ok := mat.mcbs[mid]; ok {
 			mat.cluster[cluster] = append(mat.cluster[cluster], mid)
@@ -104,6 +108,7 @@ func NewLuaMCB(fun lua.LGFunction) *luaMCB {
 	}
 }
 
+// Fun returns function prototype
 func (mcb *luaMCB) Fun() lua.LGFunction {
 	return mcb.fun
 }

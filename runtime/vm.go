@@ -5,71 +5,133 @@ import (
 
 	"github.com/ansurfen/cushion/utils"
 	"github.com/vadv/gopher-lua-libs/plugin"
-	luar "layeh.com/gopher-luar"
 
 	lua "github.com/yuin/gopher-lua"
 )
 
-type CushionVM interface {
-	Mount() CushionVM
-	Call(string)
-	CallByParam(string, []any) []any
+// VirtualMachine is an interface to abstract different interpreter
+type VirtualMachine interface {
+	// Default to build vm with standard
+	Default() VirtualMachine
+	// Call to call specify function without arguments
+	Call(string) ([]any, error)
+	// FastCall to call specify function without arguments and not return value
+	FastCall(string) error
+	// Call to call specify function with arguments
+	CallByParam(string, []lua.LValue) ([]any, error)
+	// FastCallByParam to call specify function with arguments and not return value
+	FastCallByParam(string, []lua.LValue) error
+	// Eval to execute string of script
 	Eval(string) error
+	// EvalFile to execute file of script
 	EvalFile(string) error
+	// SetGlobal to set global virable
+	SetGlobal(Handles)
+	// SafeSetGlobal to set global virable when it isn't exist
+	SafeSetGlobal(Handles)
+	// RegisterModule to register modules
+	RegisterModule(Handles)
+	// UnregisterModule to unregister specify module
+	UnregisterModule(string)
+	// Interp returns interpreter
+	Interp() *LuaInterp
 }
 
-var _ CushionVM = &LuaVM{}
+var _ VirtualMachine = &LuaVM{}
 
 type LuaVM struct {
-	state *lua.LState
-	mat   *LuaMAT
+	mat   MAT
+	state *LuaInterp
 }
 
-type LuaFuncs map[string]lua.LGFunction
+type (
+	LuaFuncs map[string]lua.LGFunction
+	Handles  = LuaFuncs
+	// lua interpreter
+	LuaInterp = lua.LState
+)
 
-func NewLuaVM() *LuaVM {
+func NewVirtualMachine() VirtualMachine {
 	return &LuaVM{
 		state: lua.NewState(),
 		mat:   NewLuaMAT(),
 	}
 }
 
-func (vm *LuaVM) Instance() *lua.LState {
+// Interp returns interpreter
+func (vm *LuaVM) Interp() *LuaInterp {
 	return vm.state
 }
 
-func (vm *LuaVM) Call(fun string) {
+// Call to call specify function without arguments
+func (vm *LuaVM) Call(fun string) ([]any, error) {
+	ret := []any{}
 	if err := vm.state.CallByParam(lua.P{
 		Fn:      vm.state.GetGlobal(fun),
 		NRet:    0,
 		Protect: true,
 	}); err != nil {
-		panic(err)
+		return ret, err
 	}
-}
-
-func (vm *LuaVM) CallByParam(fn string, args []any) []any {
-	arg := []lua.LValue{}
-	for _, a := range args {
-		arg = append(arg, luar.New(vm.state, a))
-	}
-	vm.state.CallByParam(lua.P{
-		Fn:      vm.state.GetGlobal(fn),
-		NRet:    0,
-		Protect: true,
-	}, arg...)
-	ret := []any{}
 	for i := 1; i <= vm.state.GetTop(); i++ {
 		ret = append(ret, vm.state.CheckAny(i))
 	}
-	return ret
+	return ret, nil
 }
 
-func (vm *LuaVM) MAT() *LuaMAT {
-	return vm.mat
+// FastCall to call specify function without arguments and not return value
+func (vm *LuaVM) FastCall(fun string) error {
+	return vm.state.CallByParam(lua.P{
+		Fn:      vm.state.GetGlobal(fun),
+		NRet:    0,
+		Protect: true,
+	})
 }
 
-func (vm *LuaVM) Mount() CushionVM {
+// Call to call specify function with arguments
+func (vm *LuaVM) CallByParam(fn string, args []lua.LValue) ([]any, error) {
+	ret := []any{}
+	if err := vm.state.CallByParam(lua.P{
+		Fn:      vm.state.GetGlobal(fn),
+		Protect: true,
+	}, args...); err != nil {
+		return ret, err
+	}
+	for i := 1; i <= vm.state.GetTop(); i++ {
+		ret = append(ret, vm.state.CheckAny(i))
+	}
+	return ret, nil
+}
+
+// FastCallByParam to call specify function with arguments and not return value
+func (vm *LuaVM) FastCallByParam(fn string, args []lua.LValue) error {
+	return vm.state.CallByParam(lua.P{
+		Fn:      vm.state.GetGlobal(fn),
+		Protect: true,
+	}, args...)
+}
+
+// RegisterModule to register modules
+func (vm *LuaVM) RegisterModule(fns LuaFuncs) {
+	vm.mat.Mount(fns)
+}
+
+// UnregisterModule to unregister specify module
+func (vm *LuaVM) UnregisterModule(mid string) {
+	vm.mat.Unmount(mid)
+}
+
+// Default to build vm with standard
+func (vm *LuaVM) Default() VirtualMachine {
+	vm.mountCushion()
+	vm.SetGlobal(LuaFuncs{
+		"LoadSDK": globalLoadSDK,
+		"Import":  globalImport(vm),
+	})
+	return vm
+}
+
+func (vm *LuaVM) mountCushion() {
 	vm.mat.Mount(LuaFuncs{
 		"cushion-check":   loadCheck,
 		"cushion-io":      loadIO,
@@ -84,11 +146,6 @@ func (vm *LuaVM) Mount() CushionVM {
 		"cushion-check", "cushion-io", "cushion-tmpl",
 		"cushion-tui", "cushion-vm", "cushion-crypto",
 		"cushion-time", "cushion-path", "cushion-strings"})
-	vm.mount(LuaFuncs{
-		"LoadSDK": globalLoadSDK,
-		"Import":  globalImport(vm),
-	})
-	return vm
 }
 
 func (vm *LuaVM) mountLibs() {
@@ -97,21 +154,15 @@ func (vm *LuaVM) mountLibs() {
 	})
 }
 
-func Require() int {
-	return 0
-}
-
-func (vm *LuaVM) LazyMount(pkgs []string) CushionVM {
-	return vm
-}
-
-func (vm *LuaVM) mount(loaders LuaFuncs) {
+// SetGlobal to set global virable
+func (vm *LuaVM) SetGlobal(loaders LuaFuncs) {
 	for name, loader := range loaders {
 		vm.state.SetGlobal(name, vm.state.NewFunction(loader))
 	}
 }
 
-func (vm *LuaVM) MountGlobal(loaders LuaFuncs) {
+// SafeSetGlobal to set global virable when it isn't exist
+func (vm *LuaVM) SafeSetGlobal(loaders LuaFuncs) {
 	for name, loader := range loaders {
 		if value := vm.state.GetGlobal(name); value.String() == "nil" {
 			vm.state.SetGlobal(name, vm.state.NewFunction(loader))
@@ -119,6 +170,7 @@ func (vm *LuaVM) MountGlobal(loaders LuaFuncs) {
 	}
 }
 
+// EvalFile to execute file of script
 func (vm *LuaVM) EvalFile(fullpath string) error {
 	if path.Ext(fullpath) == ".lua" {
 		return vm.state.DoFile(fullpath)
@@ -126,6 +178,7 @@ func (vm *LuaVM) EvalFile(fullpath string) error {
 	return nil
 }
 
+// Eval to execute string of script
 func (vm *LuaVM) Eval(script string) error {
 	return vm.state.DoString(script)
 }

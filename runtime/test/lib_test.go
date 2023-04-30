@@ -7,7 +7,6 @@ import (
 )
 
 func TestTui(t *testing.T) {
-	vm := runtime.NewLuaVM()
-	vm.Mount()
+	vm := runtime.NewVirtualMachine().Default()
 	vm.EvalFile("tui.lua")
 }

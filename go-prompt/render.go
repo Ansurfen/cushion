@@ -132,7 +132,7 @@ func (r *Render) renderCompletion(buf *Buffer, completions Completion) {
 		if len(desc) == 0 {
 			desc = "Press Ctrl + Y to switch mode"
 		}
-		if mode.Attr == Attr_NODSCRIPTION {
+		if mode.Attr == ModeAttrNoDescription {
 			formatted, width = formatSuggetionsWithModeWithoutDesc(
 				suggestions,
 				int(r.col)-runewidth.StringWidth(prefix)-1, // -1 means a width of scrollbar

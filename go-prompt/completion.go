@@ -8,6 +8,53 @@ import (
 	runewidth "github.com/mattn/go-runewidth"
 )
 
+// Completion is an interface to abstract CompletionManager.
+type Completion interface {
+	// Completing returns whether the CompletionManager selects something one.
+	Completing() bool
+	// GetSelectedSuggestion returns the selected item.
+	GetSelectedSuggestion() (Suggest, bool)
+	// GetSuggestions returns the list of suggestion.
+	GetSuggestions() []Suggest
+	// Next to select the next suggestion item.
+	Next()
+	// Previous to select the previous suggestion item.
+	Previous()
+	// Reset to select nothing.
+	Reset()
+	// Update to update the suggestions.
+	Update(Document)
+	// EventLoop is used to asynchronous load words of candidate.
+	// It is not implemented for synchronous struct.
+	EventLoop()
+
+	// export field from struct
+	getSelected() int
+	getTmp() []Suggest
+	getMax() uint16
+	getCompleter() Completer
+	getModes() []CompletionMode
+	getVerticalScroll() int
+	getWordSeparator() string
+	getShowAtStart() bool
+	setWordSeparator(string)
+	setMax(uint16)
+	setShowAtStart()
+	setModes([]CompletionMode)
+	// setPrompt just is used to implement Completion for CompletionManager
+	// which be implemented concretely in AsyncCompletionManager
+	setPrompt(*Prompt)
+}
+
+var (
+	_ Completion = &CompletionManager{}
+	_ Completion = &AsyncCompletionManager{}
+
+	leftMargin       = runewidth.StringWidth(leftPrefix + leftSuffix)
+	rightMargin      = runewidth.StringWidth(rightPrefix + rightSuffix)
+	completionMargin = leftMargin + rightMargin
+)
+
 const (
 	shortenSuffix = "..."
 	leftPrefix    = " "
@@ -18,19 +65,18 @@ const (
 	// CompletionMode attribute:
 
 	// it's default value, which remain all field of suggest
-	Attr_NONE = iota
+	ModeAttrNone = iota
 	// Description in suggest will be not printed when completing
-	Attr_NODSCRIPTION
+	ModeAttrNoDescription
 	// Icon in suggest will be not printed when completing
-	Attr_NOICON
+	ModeAttrNoIcon
 	// only represent text in suggest
-	Attr_OnlyText
-)
+	ModeAttrOnlyText
 
-var (
-	leftMargin       = runewidth.StringWidth(leftPrefix + leftSuffix)
-	rightMargin      = runewidth.StringWidth(rightPrefix + rightSuffix)
-	completionMargin = leftMargin + rightMargin
+	// AsyncCompletionManager event
+
+	AsyncCompletionUpdate = iota
+	AsyncCompletionReset
 )
 
 // Suggest is printed when completing.
@@ -199,9 +245,9 @@ func (c *CompletionManager) setModes(modes []CompletionMode) {
 	c.modes = modes
 }
 
-func (c *CompletionManager) setPrompt(p *Prompt) {
-
-}
+// setPrompt just is used to implement Completion for CompletionManager
+// which be implemented concretely in AsyncCompletionManager
+func (c *CompletionManager) setPrompt(p *Prompt) {}
 
 func deleteBreakLineCharacters(s string) string {
 	s = strings.Replace(s, "\n", "", -1)
@@ -306,11 +352,6 @@ func NewCompletionManager(completer Completer, max uint16) *CompletionManager {
 	}
 }
 
-const (
-	ASYNC_COMPLETION_UPDATE = iota
-	ASYNC_COMPLETION_RESET
-)
-
 // AsyncCompleterManager asynchronous manage which suggest is now selected.
 type AsyncCompletionManager struct {
 	*CompletionManager
@@ -334,12 +375,12 @@ func (c *AsyncCompletionManager) setPrompt(p *Prompt) {
 
 // Reset to select nothing through writting signal into event chan
 func (c *AsyncCompletionManager) Reset() {
-	c.eventCh <- ASYNC_COMPLETION_RESET
+	c.eventCh <- AsyncCompletionReset
 }
 
 // Update to update the suggestions through writting signal into event chan
 func (c *AsyncCompletionManager) Update(in Document) {
-	c.eventCh <- ASYNC_COMPLETION_UPDATE
+	c.eventCh <- AsyncCompletionUpdate
 }
 
 // EventLoop is used to asynchronous load words of candidate.
@@ -357,7 +398,7 @@ func (c *AsyncCompletionManager) EventLoop() {
 		select {
 		case e := <-c.eventCh:
 			switch e {
-			case ASYNC_COMPLETION_UPDATE:
+			case AsyncCompletionUpdate:
 				if c.lock { // simulate mutex
 					break // It'll downward execute when last goroutine complete
 				}
@@ -367,7 +408,7 @@ func (c *AsyncCompletionManager) EventLoop() {
 					c.p.renderer.Render(c.p.buf, c.p.completion)
 					c.lock = false
 				}()
-			case ASYNC_COMPLETION_RESET:
+			case AsyncCompletionReset:
 				c.tmp = []Suggest{{Text: c.p.renderer.progress.Next(), Comment: true}}
 			}
 		default:
@@ -376,44 +417,3 @@ func (c *AsyncCompletionManager) EventLoop() {
 		time.Sleep(10 * time.Millisecond)
 	}
 }
-
-// Completion is an interface to abstract CompletionManager.
-type Completion interface {
-	// Completing returns whether the CompletionManager selects something one.
-	Completing() bool
-	// GetSelectedSuggestion returns the selected item.
-	GetSelectedSuggestion() (Suggest, bool)
-	// GetSuggestions returns the list of suggestion.
-	GetSuggestions() []Suggest
-	// Next to select the next suggestion item.
-	Next()
-	// Previous to select the previous suggestion item.
-	Previous()
-	// Reset to select nothing.
-	Reset()
-	// Update to update the suggestions.
-	Update(Document)
-	// EventLoop is used to asynchronous load words of candidate.
-	// It is not implemented for synchronous struct.
-	EventLoop()
-
-	// export field from struct
-	getSelected() int
-	getTmp() []Suggest
-	getMax() uint16
-	getCompleter() Completer
-	getModes() []CompletionMode
-	getVerticalScroll() int
-	getWordSeparator() string
-	getShowAtStart() bool
-	setWordSeparator(string)
-	setMax(uint16)
-	setShowAtStart()
-	setModes([]CompletionMode)
-	setPrompt(*Prompt)
-}
-
-var (
-	_ Completion = &CompletionManager{}
-	_ Completion = &AsyncCompletionManager{}
-)

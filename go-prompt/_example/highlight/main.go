@@ -76,7 +76,6 @@ func splitLast(path string) (dir, file string) {
 }
 
 // joinPath joins the component parts of a path.
-
 func joinPath(parts []string) string {
 	var path string
 	if len(parts) > 0 {
@@ -111,8 +110,8 @@ func main() {
 		in := prompt.Input("", completer,
 			prompt.OptionTitle("sql-prompt"),
 			prompt.OptionRegisterMode([]prompt.CompletionMode{
-				{Name: "语法模式", Attr: prompt.Attr_NONE},
-				{Name: "路由模式 按住Ctrl+Y切换模式", Attr: prompt.Attr_NODSCRIPTION},
+				{Name: "语法模式", Attr: prompt.ModeAttrNone},
+				{Name: "路由模式 按住Ctrl+Y切换模式", Attr: prompt.ModeAttrNoDescription},
 			}),
 			prompt.OptionHistoryInstance(history),
 			// prompt.OptionHistory([]string{"SELECT * FROM users;"}),

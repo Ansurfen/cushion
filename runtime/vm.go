@@ -4,7 +4,6 @@ import (
 	"path"
 
 	"github.com/ansurfen/cushion/utils"
-	"github.com/vadv/gopher-lua-libs/plugin"
 
 	lua "github.com/yuin/gopher-lua"
 )
@@ -165,12 +164,6 @@ func (vm *LuaVM) mountCushion() {
 		"cushion-time", "cushion-path", "cushion-strings"})
 }
 
-func (vm *LuaVM) mountLibs() {
-	vm.mat.Mount(LuaFuncs{
-		"libs-plugin": plugin.Loader,
-	})
-}
-
 // SetGlobalFn to set global function
 func (vm *LuaVM) SetGlobalFn(loaders LuaFuncs) {
 	for name, loader := range loaders {
@@ -215,6 +208,7 @@ func (vm *LuaVM) EvalFunc(fn lua.LValue, args []lua.LValue) ([]any, error) {
 	return ret, nil
 }
 
+// FastEvalFunc to execute function and not return value
 func (vm *LuaVM) FastEvalFunc(fn lua.LValue, args []lua.LValue) error {
 	return vm.state.CallByParam(lua.P{
 		Fn:      fn,
@@ -222,6 +216,7 @@ func (vm *LuaVM) FastEvalFunc(fn lua.LValue, args []lua.LValue) error {
 	}, args...)
 }
 
+// GetGlobalVar returns global variable
 func (vm *LuaVM) GetGlobalVar(name string) lua.LValue {
 	return vm.state.GetGlobal(name)
 }

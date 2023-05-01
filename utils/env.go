@@ -16,6 +16,10 @@ const (
 	ConfFile  = "conf.yaml"
 )
 
+func init() {
+	env = NewBaseEnv()
+}
+
 // GetEnv returns global BaseEnv pointer
 func GetEnv() *BaseEnv {
 	return env
@@ -37,7 +41,6 @@ type EnvOpt[T any] struct {
 
 // NewEnv to init BaseEnv and return Payload pointer which will be initialized from specify configure file in opt.
 func NewEnv[T any](opt EnvOpt[T]) *T {
-	env = NewBaseEnv()
 	env.workdir = filepath.ToSlash(path.Join(env.workdir, opt.Workdir))
 	if ok, err := PathIsExist(env.workdir); err != nil {
 		panic(err)

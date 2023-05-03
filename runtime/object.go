@@ -404,6 +404,71 @@ func (obj *LuaFuncObject) SetBlock(block ...LuaObject) {
 	obj.block = append(obj.block, block...)
 }
 
+type LuaGotoObject struct {
+	label string
+}
+
+func LuaGoto(label string) *LuaGotoObject {
+	return &LuaGotoObject{
+		label: label,
+	}
+}
+
+func (LuaGotoObject) Ident() string { return "" }
+
+func (obj *LuaGotoObject) Value() string {
+	return fmt.Sprintf(`goto %s`, obj.label)
+}
+
+type LuaIfObject struct {
+	conds []string
+	block []LuaObject
+}
+
+func LuaIf(conds []string, block ...LuaObject) *LuaIfObject {
+	return &LuaIfObject{
+		conds: conds,
+		block: block,
+	}
+}
+
+func (LuaIfObject) Ident() string { return "" }
+
+func (obj *LuaIfObject) Value() string {
+	str := fmt.Sprintf("if %s then\n", strings.Join(obj.conds, " and "))
+	for _, b := range obj.block {
+		str += fmt.Sprintf("  %s\n", b.Value())
+	}
+	str += "end"
+	return str
+}
+
+func (obj *LuaIfObject) AppendCond() {
+
+}
+
+func (obj *LuaIfObject) SetCond() {
+
+}
+
+type LuaForObject struct {
+	block []LuaObject
+}
+
+func LuaIRange() *LuaForObject {
+	return &LuaForObject{}
+}
+
+func LuaKRange() *LuaForObject {
+	return &LuaForObject{}
+}
+
+func (LuaForObject) Ident() string { return "" }
+
+func (obj *LuaForObject) Value() string {
+	return ""
+}
+
 type LuaProgramObject struct {
 	ident string
 	codes []LuaObject
@@ -495,4 +560,8 @@ func LuaImport(mods ...string) LuaObject {
 		return LuaSpaceLine()
 	}
 	return LuaGlobalVar(fmt.Sprintf(`Import({ %s })`, strings.Join(mods, ", ")))
+}
+
+func LuaLabel(name string) string {
+	return fmt.Sprintf("::%s::", name)
 }

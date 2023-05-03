@@ -2,8 +2,9 @@ package runtime
 
 import (
 	"fmt"
-	"github.com/ansurfen/cushion/utils"
 	"testing"
+
+	"github.com/ansurfen/cushion/utils"
 )
 
 func TestLuaObject(t *testing.T) {
@@ -103,4 +104,9 @@ func TestLuaScriptGernarateByYAML(t *testing.T) {
 		panic(err)
 	}
 	fmt.Println(express)
+}
+
+func TestLuaConditionExpress(t *testing.T) {
+	fmt.Println(LuaIf([]string{"i ~= 0", "False"}, LuaGoto("a")).Value())
+	LuaIRange()
 }

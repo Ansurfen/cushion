@@ -97,7 +97,7 @@ type Express struct {
 }
 
 func TestLuaScriptGernarateByYAML(t *testing.T) {
-	yaml := utils.NewConfFromPath("ark.yaml")
+	yaml := utils.OpenConfFromPath("ark.yaml")
 	fmt.Println(yaml)
 	var express Express
 	if err := yaml.Unmarshal(&express); err != nil {

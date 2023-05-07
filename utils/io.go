@@ -16,25 +16,19 @@ import (
 	"github.com/spf13/viper"
 )
 
-// NewConf unmarshal file which located in disk to memory according to name, type, dir
-func NewConf(name, _type, dir string) *viper.Viper {
+// OpenConf unmarshal file which located in disk to memory according to name, type, dir
+func OpenConf(name, _type, dir string) *viper.Viper {
 	conf := viper.New()
 	conf.SetConfigName(name)
 	conf.SetConfigType(_type)
 	conf.AddConfigPath(dir)
-	if err := conf.ReadInConfig(); err != nil {
-		panic(err)
-	}
 	return conf
 }
 
-// NewConf unmarshal file which located in disk to memory according to path
-func NewConfFromPath(path string) *viper.Viper {
+// OpenConfFromPath unmarshal file which located in disk to memory according to path
+func OpenConfFromPath(path string) *viper.Viper {
 	conf := viper.New()
 	conf.SetConfigFile(path)
-	if err := conf.ReadInConfig(); err != nil {
-		panic(err)
-	}
 	return conf
 }
 

@@ -104,7 +104,7 @@ func (env *BaseEnv) Dump() {
 }
 
 func (env *BaseEnv) Read(path string) {
-	env.conf = NewConfFromPath(path)
+	env.conf = OpenConfFromPath(path)
 	if wd := env.conf.GetString("workdir"); len(wd) > 0 {
 		env.workdir = filepath.ToSlash(wd)
 	}
@@ -114,7 +114,7 @@ func (env *BaseEnv) Read(path string) {
 }
 
 func (env *BaseEnv) ReadWithBind(path string, payload any) {
-	env.conf = NewConfFromPath(path)
+	env.conf = OpenConfFromPath(path)
 	if wd := env.conf.GetString("workdir"); len(wd) > 0 {
 		env.workdir = filepath.ToSlash(wd)
 	}

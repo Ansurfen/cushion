@@ -17,8 +17,8 @@ import (
 )
 
 // OpenConf unmarshal file which located in disk to memory according to name, type, dir
-func OpenConf(name, _type, dir string) *viper.Viper {
-	conf := viper.New()
+func OpenConf(name, _type, dir string, opts ...viper.Option) *viper.Viper {
+	conf := viper.NewWithOptions(opts...)
 	conf.SetConfigName(name)
 	conf.SetConfigType(_type)
 	conf.AddConfigPath(dir)
@@ -26,8 +26,8 @@ func OpenConf(name, _type, dir string) *viper.Viper {
 }
 
 // OpenConfFromPath unmarshal file which located in disk to memory according to path
-func OpenConfFromPath(path string) *viper.Viper {
-	conf := viper.New()
+func OpenConfFromPath(path string, opts ...viper.Option) *viper.Viper {
+	conf := viper.NewWithOptions(opts...)
 	conf.SetConfigFile(path)
 	return conf
 }

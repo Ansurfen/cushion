@@ -10,3 +10,7 @@ func TestExec(t *testing.T) {
 	fmt.Println(ConvertByte2String(out, GB18030))
 	fmt.Println(PathIsExist("./abc"))
 }
+
+func TestZip(t *testing.T) {
+	Zip("./Test.zip", ".")
+}

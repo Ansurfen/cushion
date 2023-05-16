@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -30,6 +31,70 @@ func OpenConfFromPath(path string, opts ...viper.Option) *viper.Viper {
 	conf := viper.NewWithOptions(opts...)
 	conf.SetConfigFile(path)
 	return conf
+}
+
+// Zip to compress zip of source to specify path
+func Zip(zipPath string, paths ...string) error {
+	if err := os.MkdirAll(filepath.Dir(zipPath), os.ModePerm); err != nil {
+		return err
+	}
+	archive, err := os.Create(zipPath)
+	if err != nil {
+		return err
+	}
+	defer archive.Close()
+	zipWriter := zip.NewWriter(archive)
+	defer zipWriter.Close()
+	// traverse the file or directory
+	for _, srcPath := range paths {
+		// remove the trailing path separator if path is a directory
+		srcPath = strings.TrimSuffix(srcPath, string(os.PathSeparator))
+
+		// visit all the files or directories in the tree
+		err = filepath.Walk(srcPath, func(path string, info fs.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+
+			// create a local file header
+			header, err := zip.FileInfoHeader(info)
+			if err != nil {
+				return err
+			}
+
+			// set compression
+			header.Method = zip.Deflate
+
+			// set relative path of a file as the header name
+			header.Name, err = filepath.Rel(filepath.Dir(srcPath), path)
+			if err != nil {
+				return err
+			}
+			if info.IsDir() {
+				header.Name += string(os.PathSeparator)
+			}
+
+			// create writer for the file header and save content of the file
+			headerWriter, err := zipWriter.CreateHeader(header)
+			if err != nil {
+				return err
+			}
+			if info.IsDir() {
+				return nil
+			}
+			f, err := os.Open(path)
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+			_, err = io.Copy(headerWriter, f)
+			return err
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Unzip unzip zip of source to specify path

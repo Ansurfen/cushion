@@ -7,7 +7,7 @@ import (
 
 func TestMAT(t *testing.T) {
 	mat := NewLuaMAT().Mount(LuaFuncs{
-		"cushion-check":  loadCheck,
+		"cushion-check":  LoadCheck,
 		"cushion-io":     loadIO,
 		"cushion-tmpl":   loadTmpl,
 		"cushion-tui":    loadTui,

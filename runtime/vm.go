@@ -149,7 +149,7 @@ func (vm *LuaVM) Default() VirtualMachine {
 
 func (vm *LuaVM) mountCushion() {
 	vm.mat.Mount(LuaFuncs{
-		"cushion-check":   loadCheck,
+		"cushion-check":   LoadCheck,
 		"cushion-io":      loadIO,
 		"cushion-tmpl":    loadTmpl,
 		"cushion-tui":     loadTui,

@@ -115,6 +115,9 @@ func (env *BaseEnv) Read(path string) {
 
 func (env *BaseEnv) ReadWithBind(path string, payload any) {
 	env.conf = OpenConfFromPath(path)
+	if err := env.conf.ReadInConfig(); err != nil {
+		panic(err)
+	}
 	if wd := env.conf.GetString("workdir"); len(wd) > 0 {
 		env.workdir = filepath.ToSlash(wd)
 	}
